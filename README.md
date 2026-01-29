@@ -49,10 +49,10 @@ Fokus pengembangan:
 
 ---
 
-### 🔁 Dynamic Login
-**Path:** `/dynamic_login`
+### 🔁 Shell Dashboard
+**Path:** `/addons/dynamic_login`
 
-Modul login dinamis yang memungkinkan perilaku autentikasi disesuaikan dengan kondisi tertentu.
+Modul shell dashboard yang memungkinkan custom dashboard disesuaikan dengan kondisi tertentu.
 
 Modul ini **terinspirasi dari pendekatan yang digunakan oleh Cybrosys Technologies**, namun dikembangkan ulang dengan:
 - Implementasi mandiri

@@ -1,0 +1,60 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+<!--
+    <record model="ir.ui.view" id="shell_dashboard.list">
+      <field name="name">ShellDashboard list</field>
+      <field name="model">shell_dashboard.shell_dashboard</field>
+      <field name="arch" type="xml">
+        <list>
+          <field name="name"/>
+          <field name="value"/>
+          <field name="value2"/>
+        </list>
+      </field>
+    </record>
+-->
+
+    <!-- actions opening views on models -->
+<!--
+    <record model="ir.actions.act_window" id="shell_dashboard.action_window">
+      <field name="name">ShellDashboard window</field>
+      <field name="res_model">shell_dashboard.shell_dashboard</field>
+      <field name="view_mode">list,form</field>
+    </record>
+-->
+
+    <!-- server action to the one above -->
+<!--
+    <record model="ir.actions.server" id="shell_dashboard.action_server">
+      <field name="name">ShellDashboard server</field>
+      <field name="model_id" ref="model_shell_dashboard_shell_dashboard"/>
+      <field name="state">code</field>
+      <field name="code">
+        action = {
+          "type": "ir.actions.act_window",
+          "view_mode": "list,form",
+          "res_model": model._name,
+        }
+      </field>
+    </record>
+-->
+
+    <!-- Top menu item -->
+<!--
+    <menuitem name="ShellDashboard" id="shell_dashboard.menu_root"/>
+-->
+    <!-- menu categories -->
+<!--
+    <menuitem name="Menu 1" id="shell_dashboard.menu_1" parent="shell_dashboard.menu_root"/>
+    <menuitem name="Menu 2" id="shell_dashboard.menu_2" parent="shell_dashboard.menu_root"/>
+-->
+    <!-- actions -->
+<!--
+    <menuitem name="List" id="shell_dashboard.menu_1_list" parent="shell_dashboard.menu_1"
+              action="shell_dashboard.action_window"/>
+    <menuitem name="Server to list" id="shell_dashboard" parent="shell_dashboard.menu_2"
+              action="shell_dashboard.action_server"/>
+-->
+  </data>
+</odoo>
