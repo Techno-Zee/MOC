@@ -26,7 +26,7 @@ Repository ini juga berfungsi sebagai **portfolio teknis** untuk menunjukkan pem
 Berikut adalah modul-modul yang tersedia dalam repository ini:
 
 ### 🔐 Custom Login
-**Path:** `/custom_login`
+**Path:** `addons/fast_login`
 
 Modul untuk melakukan kustomisasi pada proses autentikasi Odoo, dengan fokus pada:
 - Modifikasi alur login
@@ -38,7 +38,7 @@ Modul untuk melakukan kustomisasi pada proses autentikasi Odoo, dengan fokus pad
 ---
 
 ### 💳 VA POS
-**Path:** `/va_pos`
+**Path:** `addons/va_pos`
 
 Modul Point of Sale dengan integrasi **Virtual Account (VA)** sebagai metode pembayaran.
 
@@ -50,7 +50,7 @@ Fokus pengembangan:
 ---
 
 ### 🔁 Shell Dashboard
-**Path:** `/addons/dynamic_login`
+**Path:** `/addons/shell_dashboard`
 
 Modul shell dashboard yang memungkinkan custom dashboard disesuaikan dengan kondisi tertentu.
 

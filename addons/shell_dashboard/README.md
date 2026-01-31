@@ -89,10 +89,14 @@ shell_dashboard/
 │   ├── dashboard_views.xml
 │   └── assets.xml
 ├── static/
+│   ├── description/
+│   │   ├── icon.png (main icon for odoo18)
+│   │   ├── scallop.png (icon with documentation)
 │   ├── src/
 │   │   ├── js/
-│   │   ├── css/
-│   │   └── lib/
+│   │   ├── xml/
+│   │   ├── css
+│   └── lib/
 ├── security/
 │   └── ir.model.access.csv
 ├── __manifest__.py
