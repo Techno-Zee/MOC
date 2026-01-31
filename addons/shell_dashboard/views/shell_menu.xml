@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Root: Settings / Technical -->
+    <menuitem
+        id="menu_shell_dashboard_root"
+        name="Shell Dashboard"
+        sequence="60"
+        web_icon="shell_dashboard,static/description/icon.png"
+    />
+
+    <!-- Dashboards -->
+    <menuitem
+        id="menu_shell_dashboard_dashboards"
+        name="Dashboards"
+        parent="menu_shell_dashboard_root"
+        action="dashboard_view_action"
+        sequence="10"
+    />
+
+    <!-- Dashboard Blocks -->
+    <menuitem
+        id="menu_shell_dashboard_blocks"
+        name="Dashboard Blocks"
+        parent="menu_shell_dashboard_root"
+        action="dashboard_block_action"
+        sequence="20"
+    />
+
+    <!-- Configuration -->
+    <menuitem
+        id="menu_shell_dashboard_config"
+        name="Configuration"
+        parent="menu_shell_dashboard_root"
+        sequence="90"
+    />
+
+    <!-- Dashboard Menus -->
+    <menuitem
+        id="menu_shell_dashboard_menus"
+        name="Dashboard Menus"
+        parent="menu_shell_dashboard_config"
+        action="action_dashboard_menu"
+        sequence="10"
+    />
+
+</odoo>

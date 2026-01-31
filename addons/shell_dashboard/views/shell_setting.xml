@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_shell_dashboard" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.shell_dashboard</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//form" position="inside">
+
+                <app name="shell_dashboard" string="Shell Dashboard" web_icon="shell_dashboard,static/description/icon.png">
+
+                    <!-- APPEARANCE SETTINGS -->
+                    <block title="Appearance">
+                        <setting string="Default Tile Background Color" help="Default background color for dashboard tiles">
+                            <field name="dashboard_default_tile_color"/>
+                        </setting>
+
+                        <setting string="Default Tile Text Color" help="Default text color for dashboard tiles">
+                            <field name="dashboard_default_text_color"/>
+                        </setting>
+                    </block>
+
+                    <!-- LAYOUT SETTINGS -->
+                    <block title="Layout">
+                        <setting string="Grid Cell Height" help="Height of each grid cell in pixels">
+                            <field name="dashboard_default_cell_height"/>
+                        </setting>
+
+                        <setting string="Grid Columns" help="Number of columns in the dashboard grid">
+                            <field name="dashboard_default_columns"/>
+                        </setting>
+                    </block>
+
+                    <!-- BEHAVIOR SETTINGS -->
+                    <block title="Behavior">
+                        <setting string="Enable Animations" help="Enable animations for dashboard elements">
+                            <field name="dashboard_enable_animations"/>
+                        </setting>
+
+                        <setting string="Maximum Blocks per User" help="Limit the number of dashboard blocks per user">
+                            <field name="dashboard_max_blocks_per_user"/>
+                        </setting>
+                    </block>
+
+                    <!-- CHART SETTINGS -->
+                    <block title="Charts">
+                        <setting string="Default Chart Type" help="Default chart type for newly created charts">
+                            <field name="dashboard_default_chart_type"/>
+                        </setting>
+
+                        <setting string="Auto Refresh Interval" help="Auto refresh interval in seconds (0 to disable)">
+                            <field name="dashboard_auto_refresh_interval"/>
+                        </setting>
+                    </block>
+
+                    <!-- DATA SETTINGS -->
+                    <block title="Data">
+                        <setting string="Enable Data Export" help="Allow users to export dashboard data">
+                            <field name="dashboard_enable_data_export"/>
+                        </setting>
+
+                        <setting string="Show Quick Statistics" help="Display quick statistics panel on dashboards">
+                            <field name="dashboard_show_quick_stats"/>
+                        </setting>
+                    </block>
+
+                    <!-- PERFORMANCE SETTINGS -->
+                    <block title="Performance">
+                        <setting string="Default Date Range" help="Default date range applied to dashboard filters">
+                            <field name="dashboard_date_range_default"/>
+                        </setting>
+
+                        <setting string="Cache Duration" help="Cache duration in minutes (0 disables cache)">
+                            <field name="dashboard_cache_duration"/>
+                        </setting>
+                    </block>
+
+                    <!-- DEVELOPER SETTINGS -->
+                    <block title="Developer">
+                        <setting string="Enable SQL Debug" help="Enable SQL debug logging (developer use only)">
+                            <field name="dashboard_enable_sql_debug"/>
+                        </setting>
+                    </block>
+
+                </app>
+
+            </xpath>
+        </field>
+    </record>
+</odoo>

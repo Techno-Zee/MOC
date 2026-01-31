@@ -1,2 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_shell_dashboard_shell_dashboard,shell_dashboard.shell_dashboard,model_shell_dashboard_shell_dashboard,base.group_user,1,1,1,1
+access_dashboard_block_user,access_dashboard_block_user,model_dashboard_block,group_dashboard_user,1,0,0,0
+access_dashboard_block_manager,access_dashboard_block_manager,model_dashboard_block,group_dashboard_manager,1,1,0,0
+access_dashboard_block_admin,access_dashboard_block_admin,model_dashboard_block,group_dashboard_admin,1,1,1,1
+
+access_dashboard_menu_user,access_dashboard_menu_user,model_dashboard_menu,group_dashboard_user,1,0,0,0
+access_dashboard_menu_manager,access_dashboard_menu_manager,model_dashboard_menu,group_dashboard_manager,1,1,0,0
+access_dashboard_menu_admin,access_dashboard_menu_admin,model_dashboard_menu,group_dashboard_admin,1,1,1,1
