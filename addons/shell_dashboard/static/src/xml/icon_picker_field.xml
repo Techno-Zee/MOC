@@ -1,0 +1,39 @@
+<templates>
+  <t t-name="odoo_dynamic_dashboard.IconPickerField" owl="1">
+    <div class="o_field_widget o_field_icon_picker position-relative">
+      <div class="input-group">
+        <div class="d-flex">
+          <input type="text" class="form-control" t-att-value="state.value" readonly="readonly" placeholder="Select an icon..." />
+          <button class="btn btn-secondary" t-on-click.prevent="togglePicker">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+            </svg>
+          </button>
+        </div>
+        <div class="input-group-append">
+          <span class="input-group-text">
+            <i t-att-class="state.value || 'fa fa-home'" />
+          </span>
+        </div>
+      </div>
+
+      <t t-if="state.showPicker">
+        <div class="icon-picker-dropdown bg-white border rounded shadow-sm mt-1">
+          <div class="search-container p-2 border-bottom">
+            <input type="text" class="form-control form-control-sm" placeholder="Search icons..." t-att-value="state.searchTerm" t-on-input="(ev) => state.searchTerm = ev.target.value" />
+          </div>
+          <div class="icon-grid p-2">
+            <t t-foreach="filteredIcons" t-as="icon" t-key="icon">
+              <div class="icon-item text-center p-2 rounded" t-on-click.prevent="() => selectIcon(icon)">
+                <i t-att-class="'fa ' + icon + (state.value.includes(icon) ? ' text-primary' : '')" class="fa-2x mb-1" />
+                <div class="small">
+                  <t t-esc="icon.replace('fas-','')" />
+                </div>
+              </div>
+            </t>
+          </div>
+        </div>
+      </t>
+    </div>
+  </t>
+</templates>
