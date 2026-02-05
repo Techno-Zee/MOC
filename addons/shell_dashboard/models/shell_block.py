@@ -16,7 +16,6 @@ class DashboardBlock(models.Model):
         return action_id.id if action_id else False
 
     name = fields.Char(string="Name", help='Name of the block')
-    sub_title = fields.Char(string="Subtitle",default='Sub Title')
     fa_icon = fields.Char(string="Icon", help="Add icon for tile")
     operation = fields.Selection(
         selection=[("sum", "Sum"), ("avg", "Average"), ("count", "Count")],
@@ -158,7 +157,6 @@ class DashboardBlock(models.Model):
                 vals = {
                     'id': rec.id,
                     'name': rec.name,
-                    'sub_title': rec.sub_title,
                     'type': rec.type,
                     'graph_type': rec.graph_type,
                     'icon': rec.fa_icon,

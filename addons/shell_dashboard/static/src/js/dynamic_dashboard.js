@@ -245,66 +245,69 @@ export class OdooDashboard extends Component {
     }
 
     async renderDashboard() {
-    const self = this;
-    $("#save_layout").hide();
+        const self = this;
 
-    await this.orm.call("dashboard.block", "get_dashboard_vals", [[], this.actionId]).then(function (response) {
-        for (let i = 0; i < response.length; i++) {
-            const widget = response[i];
-            const $wrapper = $('<div class="grid-stack-item" data-id="'+widget.id+'"><div class="grid-stack-item-content"></div></div>');
-            $('.items').append($wrapper);
+        // HANCURKAN GRID SEBELUM RENDER ULANG
+        if (this.grid) {
+            this.grid.destroy(false);
+            this.grid = null;
+        }
+
+        const container = document.querySelector('.items');
+        container.innerHTML = '';
+
+        const response = await this.orm.call(
+            "dashboard.block",
+            "get_dashboard_vals",
+            [[], this.actionId]
+        );
+
+        for (const widget of response) {
+            const item = document.createElement('div');
+            item.className = 'grid-stack-item';
+            item.setAttribute('gs-x', widget.x || 0);
+            item.setAttribute('gs-y', widget.y || 0);
+            item.setAttribute('gs-w', widget.w || 4);
+            item.setAttribute('gs-h', widget.h || 2);
+            item.dataset.id = widget.id;
+
+            const content = document.createElement('div');
+            content.className = 'grid-stack-item-content';
+            item.appendChild(content);
+            container.appendChild(item);
 
             if (widget.type === 'tile') {
-                mount(DashboardTile, $wrapper.find('.grid-stack-item-content')[0], {
-                    props: { widget, doAction: self.action, dialog: self.dialog, orm: self.orm }
-                });
+                mount(DashboardTile, content, { props: { widget } });
             } else if (widget.type === 'list') {
-                mount(DashboardTable, $wrapper.find('.grid-stack-item-content')[0], {
-                    props: { widget, doAction: self.action, rpc: self.rpc, dialog: self.dialog, orm: self.orm }
-                });
+                mount(DashboardTable, content, { props: { widget } });
             } else {
-                mount(DashboardChart, $wrapper.find('.grid-stack-item-content')[0], {
-                    props: { widget, doAction: self.action, rpc: self.rpc, dialog: self.dialog, orm: self.orm }
-                });
+                mount(DashboardChart, content, { props: { widget } });
             }
         }
-    });
-}
+
+        // INIT GRIDSTACK SETELAH SEMUA ITEM ADA
+        this.initGridstack();
+    }
+
 
 
     initGridstack() {
-        if (typeof GridStack === "undefined") {
-            console.error("GridStack belum dimuat!");
-            return;
-        }
+        const gridRoot = document.querySelector('.grid-stack');
+        if (!gridRoot || typeof GridStack === 'undefined') return;
 
-        // Pastikan root grid ada
-        const gridRoot = document.querySelector('.items');
-        if (!gridRoot) {
-            console.warn("Tidak ditemukan container .items");
-            return;
-        }
-
-        // Inisialisasi gridstack di kontainer
-        const grid = GridStack.init({
+        this.grid = GridStack.init({
             float: true,
-            resizable: { handles: 'all' },
-            draggable: { handle: '.grid-stack-item-content' },
             cellHeight: 120,
             margin: 5,
-            animate: true
+            resizable: { handles: 'all' },
+            draggable: { handle: '.grid-stack-item-content' },
+            animate: true,
+            disableOneColumnMode: true,
         }, gridRoot);
 
-        // Simpan instance untuk dipakai nanti
-        this.grid = grid;
-
-        // Optional: event listener buat simpan layout
-        grid.on('change', (event, items) => {
-            console.log("Layout berubah:", items);
-        });
-
-        console.log("Gridstack aktif pada dashboard dinamis 🚀");
+        console.log("GridStack initialized ✅");
     }
+
 
 
     editLayout(ev) {
@@ -321,61 +324,24 @@ export class OdooDashboard extends Component {
     }
 
     saveLayout(ev) {
-        /* Function for saving the layout */
-        var self = this;
-        ev.stopPropagation();
         ev.preventDefault();
-        $("#edit_layout").show();
-        $("#save_layout").hide();
-        var data_list = []
-        $('.items .resize-drag').each(function (index, element) {
-            interact(element).draggable(false)
-            interact(element).resizable(false)
-            data_list.push({
-                'id': element.dataset['id'],
-                'data-x': element.dataset['x'],
-                'data-y': element.dataset['y'],
-                'height': element.clientHeight,
-                'width': element.clientWidth,
-            })
-        });
-        self.orm.call('dashboard.block', 'get_save_layout', [[], data_list]).then(function (response) {
-            window.location.reload();
-        });
+
+        const layout = this.grid.save();
+        const data = layout.map(item => ({
+            id: item.el.dataset.id,
+            x: item.x,
+            y: item.y,
+            w: item.w,
+            h: item.h,
+        }));
+
+        this.orm.call(
+            'dashboard.block',
+            'get_save_layout',
+            [[], data]
+        ).then(() => window.location.reload());
     }
 
-    changeViewMode(ev) {
-        /* Function for changing the mode of the view */
-        ev.stopPropagation();
-        ev.preventDefault();
-        const currentMode = $(".mode").attr("mode");
-        if (currentMode == "light") {
-            // $('.theme').attr('style', 'display: none;')
-            $(".container").attr('style', 'background-color: #383E45;min-height:-webkit-fill-available; !important')
-            $("#dropdownMenuButton").attr('style', 'background-color: #03DAC5;margin-top:-4px; !important')
-            $("#text_add").attr('style', 'color: black; !important')
-            $(".date-label").attr('style', 'color: black;font-family:monospace; !important')
-            $(".block_setting").attr('style', 'color: white; !important')
-            $(".block_delete").attr('style', 'color: white; !important')
-            $(".block_image").attr('style', 'color: #03DAC5; !important')
-            $(".block_pdf").attr('style', 'color: #03DAC5; !important')
-            $(".block_csv").attr('style', 'color: #03DAC5; !important')
-            $(".block_xlsx").attr('style', 'color: #03DAC5; !important')
-        }
-        else {
-            // $('.theme').attr('style', 'display: block;')
-            // $(".container").attr('style', this.ThemeSelector.el.value + 'min-height:-webkit-fill-available;')
-            $("#dropdownMenuButton").attr('style', 'background-color: none;margin-top:-4px; !important')
-            $("#text_add").attr('style', 'color: white; !important')
-            $(".date-label").attr('style', 'color: black; !important;font-family:monospace; !important')
-            $(".block_setting").attr('style', 'color: black; !important')
-            $(".block_delete").attr('style', 'color: black; !important')
-            $(".block_image").attr('style', 'color: black; !important')
-            $(".block_pdf").attr('style', 'color: black; !important')
-            $(".block_csv").attr('style', 'color: black; !important')
-            $(".block_xlsx").attr('style', 'color: black; !important')
-        }
-    }
 
     onClickAdd(event) {
         /* For enabling the toggle button */
@@ -514,7 +480,7 @@ export class OdooDashboard extends Component {
         html2pdf().set(opt).from(newElement).save().then(() => {
             window.location.reload()
         })
-        
+
     }
 
     async createPDF() {
@@ -538,24 +504,6 @@ export class OdooDashboard extends Component {
         var pdf = html2pdf().set(opt).from(newElement).toPdf()
         var pdfOutput = await pdf.output('datauristring');
         return pdfOutput
-    }
-
-    async sendMail() {
-        /* Function for creating pdf and sending mail to the selected users */
-        /* This function calls the createPDF() function and returns the pdf datas */
-        var created_pdf = await this.createPDF();
-        var base64code = created_pdf.split(',')[1];
-        this.action.doAction({
-            type: 'ir.actions.act_window',
-            name: 'SEND MAIL',
-            res_model: 'dashboard.mail',
-            view_mode: 'form',
-            views: [[false, 'form']],
-            target: 'new',
-            context: {
-                'default_base64code': base64code,
-            }
-        })
     }
 }
 OdooDashboard.template = "owl.OdooDashboard"
