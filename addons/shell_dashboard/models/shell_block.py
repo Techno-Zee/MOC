@@ -3,283 +3,705 @@ from ast import literal_eval
 from odoo import api, fields, models
 from odoo.osv import expression
 import logging
+import random
+
+_logger = logging.getLogger(__name__)
 
 class DashboardBlock(models.Model):
     """Class used to create charts and tiles in dashboard"""
     _name = "dashboard.block"
     _description = "Dashboard Block"
-
-    def get_default_action(self):
-        """Function to get values from dashboard if action_id is true, return
-        the action ID, else return False"""
-        action_id = self.env.ref('zee_ui.dashboard_view_action', False)
-        return action_id.id if action_id else False
-
-    name = fields.Char(string="Name", help='Name of the block')
-    fa_icon = fields.Char(string="Icon", help="Add icon for tile")
-    operation = fields.Selection(
-        selection=[("sum", "Sum"), ("avg", "Average"), ("count", "Count")],
-        string="Operation",
-        help='Tile Operation to calculate values for tile',
-        required=True
-    )
-    graph_type = fields.Selection(
-        selection=[("bar", "Bar"), ("radar", "Radar"), ("pie", "Pie"),
-                   ("polarArea", "Polar Area"), ("line", "Line"),
-                   ("donut", "Donut")],
-        string="Chart Type", help='Type of Chart'
-    )
-    measured_field_id = fields.Many2one("ir.model.fields", string="Measured Field", help="Select the Measured")
-    client_action_id = fields.Many2one('ir.actions.client', string="Client Action", default=get_default_action, help="Client Action")
+    _order = "sequence, name"
+    
+    # ==== SEQUENCE AND VISIBILITY ====
+    sequence = fields.Integer(string="Sequence", default=10, help="Order of blocks in dashboard")
+    active = fields.Boolean(string="Active", default=True, help="Uncheck to hide this block")
+    is_public = fields.Boolean(string="Public Dashboard", default=False, 
+                               help="If checked, this block will be visible to all users")
+    
+    # ==== BASIC INFORMATION ====
+    name = fields.Char(string="Name", required=True, help='Name of the block')
+    description = fields.Text(string="Description", help="Detailed description of this block")
     type = fields.Selection(
-        selection=[("graph", "Chart"), ("tile", "Tile"), ("list", "Table")],
-        string="Type", help='Type of Block: Chart, Tile, or Table'
+        selection=[("graph", "Chart"), ("tile", "Tile"), ("list", "Table"), ("kpi", "KPI")],
+        string="Type", required=True, default="tile",
+        help='Type of Block: Chart, Tile, Table, or KPI'
     )
-    x_axis = fields.Char(string="X-Axis", help="Chart X-axis")
-    y_axis = fields.Char(string="Y-Axis", help="Chart Y-axis")
-    height = fields.Char(string="Height", help="Height of the block")
-    width = fields.Char(string="Width", help="Width of the block")
-    translate_x = fields.Char(string="Translate_X", help="x value for style transform translate")
-    translate_y = fields.Char(string="Translate_Y", help="y value for style transform translate")
-    data_x = fields.Char(string="Data_X", help="Data x value for resize")
-    data_y = fields.Char(string="Data_Y", help="Data y value for resize")
-    group_by_id = fields.Many2one("ir.model.fields", string="Group by(Y-Axis)", help='Field value for Y-Axis')
-    tag_fields_ids = fields.Many2many("ir.model.fields", string="Field", help='Field value for Table')
-    tile_color = fields.Char(string="Tile Color", help='Primary Color of Tile')
-    text_color = fields.Char(string="Text Color", help='Text Color of Tile')
-    val_color = fields.Char(string="Value Color", help='Value Color of Tile')
-    fa_color = fields.Char(string="Icon Color", help='Icon Color of Tile')
-    filter = fields.Char(string="Filter", help="Add filter")
-    model_id = fields.Many2one('ir.model', string='Model', help="Select the module name")
-    tag_model_ids = fields.Char(related='model_id.model', string="Model Name", help="Added model_id model")
-    model_name = fields.Char(related='model_id.model', string="Model Name", help="Added model_id model")
-    edit_mode = fields.Boolean(string="Edit Mode", help="Enable to edit chart and tile")
-
-    record_value = fields.Integer(string='Record Value', compute='_compute_record_value', store=True, help="Total dari measured_field_id berdasarkan operation dan filter.")
-    prev = fields.Float(string='Prev Value',default=0)
-    target = fields.Float(string='Target Value',default=0)
-
-    @api.depends('measured_field_id', 'operation', 'filter', 'model_name')
+    
+    # ==== DATA SOURCE CONFIGURATION ====
+    # PERBAIKAN: Hapus ondelete='restrict' untuk ir.model
+    model_id = fields.Many2one(
+        'ir.model', 
+        string='Model', 
+        required=True, 
+        ondelete='cascade',  # Ubah dari 'restrict' ke 'cascade'
+        help="Select the model to fetch data from"
+    )
+    model_name = fields.Char(
+        related='model_id.model', 
+        string="Model Name", 
+        store=True, 
+        readonly=True
+    )
+    filter = fields.Char(
+        string="Domain Filter", 
+        help="Filter domain for data (e.g., [('state','=','done')])",
+        widget="domain", 
+        options="{'model': 'model_name'}"
+    )
+    
+    # PERBAIKAN: Tambahkan ondelete='cascade' untuk field yang merujuk ke ir.model.fields
+    group_by_id = fields.Many2one(
+        "ir.model.fields", 
+        string="Group by",
+        ondelete='cascade',  # Tambahkan ini
+        domain="[('model_id','=',model_id), ('ttype','not in',['one2many','binary']), ('store', '=', True)]",
+        help='Field to group by (for charts and tables)'
+    )
+    
+    # ==== MEASUREMENT CONFIGURATION ====
+    operation = fields.Selection(
+        selection=[
+            ("sum", "Sum"), 
+            ("avg", "Average"), 
+            ("count", "Count"),
+            ("min", "Minimum"),
+            ("max", "Maximum")
+        ],
+        string="Operation",
+        default="count",
+        help='Aggregation operation to calculate values'
+    )
+    
+    # PERBAIKAN: Tambahkan ondelete='cascade' untuk field yang merujuk ke ir.model.fields
+    measured_field_id = fields.Many2one(
+        "ir.model.fields", 
+        string="Measured Field",
+        ondelete='cascade',  # Tambahkan ini
+        domain="[('model_id','=',model_id), ('ttype','in',['float','integer','monetary']), ('store', '=', True)]",
+        help="Field to measure/aggregate"
+    )
+    
+    # ==== VISUAL CONFIGURATION ====
+    # For Charts
+    graph_type = fields.Selection(
+        selection=[
+            ("bar", "Bar Chart"), 
+            ("line", "Line Chart"), 
+            ("pie", "Pie Chart"),
+            ("donut", "Donut Chart"),
+            ("radar", "Radar Chart"),
+            ("polarArea", "Polar Area")
+        ],
+        string="Chart Type",
+        default="bar",
+        help='Type of Chart'
+    )
+    
+    # For Tiles/KPI
+    fa_icon = fields.Char(
+        string="Icon", 
+        default="fa-cube",
+        help="Font Awesome icon class (e.g., 'fa-users', 'fa-chart-line')"
+    )
+    icon_size = fields.Selection(
+        [('small', 'Small'), ('medium', 'Medium'), ('large', 'Large')],
+        string="Icon Size",
+        default='medium'
+    )
+    
+    # Colors
+    tile_color = fields.Char(
+        string="Background Color", 
+        default="#1f6abb", 
+        help='Primary Color of Tile/Chart'
+    )
+    text_color = fields.Char(
+        string="Text Color", 
+        default="#FFFFFF", 
+        help='Text Color'
+    )
+    val_color = fields.Char(
+        string="Value Color", 
+        default="#FFFFFF", 
+        help='Value Color'
+    )
+    fa_color = fields.Char(
+        string="Icon Color", 
+        default="#FFFFFF", 
+        help='Icon Color'
+    )
+    
+    # ==== LAYOUT AND POSITION ====
+    height = fields.Char(string="Height", default="300px", help="Height of the block")
+    width = fields.Char(string="Width", default="100%", help="Width of the block")
+    translate_x = fields.Char(string="Position X", help="X position for grid layout")
+    translate_y = fields.Char(string="Position Y", help="Y position for grid layout")
+    data_x = fields.Integer(string="Grid X", default=0, help="Grid X coordinate")
+    data_y = fields.Integer(string="Grid Y", default=0, help="Grid Y coordinate")
+    grid_width = fields.Integer(string="Grid Width", default=1, help="Width in grid units (1-12)")
+    grid_height = fields.Integer(string="Grid Height", default=1, help="Height in grid units (1-12)")
+    
+    # ==== TABLE CONFIGURATION ====
+    # PERBAIKAN: Untuk Many2many, Odoo menangani ondelete secara otomatis
+    tag_fields_ids = fields.Many2many(
+        "ir.model.fields", 
+        string="Table Columns",
+        domain="[('model_id','=',model_id), ('ttype','not in',['binary']), ('store', '=', True)]",
+        help='Fields to display in table'
+    )
+    table_limit = fields.Integer(string="Row Limit", default=10, 
+                               help="Maximum number of rows to display")
+    show_pagination = fields.Boolean(string="Show Pagination", default=False)
+    
+    # ==== KPI/TARGET SETTINGS ====
+    record_value = fields.Float(
+        string='Current Value', 
+        compute='_compute_record_value', 
+        store=True, 
+        digits=(16, 2),
+        help="Calculated value based on operation and filter"
+    )
+    prev_value = fields.Float(
+        string='Previous Value', 
+        default=0, 
+        help="Previous period value for comparison"
+    )
+    target_value = fields.Float(
+        string='Target Value', 
+        default=0, 
+        help="Target value for KPI"
+    )
+    show_trend = fields.Boolean(string="Show Trend Indicator", default=True)
+    trend_period = fields.Selection(
+        [('day', 'Day'), ('week', 'Week'), ('month', 'Month'), ('year', 'Year')],
+        string="Trend Period",
+        default='month'
+    )
+    
+    # ==== SYSTEM FIELDS ====
+    # PERBAIKAN: Tambahkan ondelete='cascade' untuk client_action_id
+    client_action_id = fields.Many2one(
+        'ir.actions.client', 
+        string="Client Action", 
+        ondelete='cascade',  # Tambahkan ini
+        default=lambda self: self._get_default_action(),
+        help="Client Action"
+    )
+    edit_mode = fields.Boolean(
+        string="Edit Mode", 
+        default=False, 
+        help="Enable to edit chart and tile"
+    )
+    last_update = fields.Datetime(
+        string="Last Updated", 
+        compute='_compute_last_update', 
+        store=True
+    )
+    
+    # ==== COMPUTED FIELDS ====
+    @api.depends('measured_field_id', 'operation', 'filter', 'model_name', 'group_by_id')
     def _compute_record_value(self):
+        """Compute the aggregated value based on operation and filter"""
         for rec in self:
-            rec.record_value = 0.0 # Selalu inisialisasi sebagai float
-
+            rec.record_value = 0.0
+            
             if not rec.model_name:
                 continue
-
+                
             try:
                 target_model = self.env[rec.model_name]
             except KeyError:
-                continue # Model tidak ditemukan, skip record ini
-
-            domain = []
-            if rec.filter:
-                try:
-                    # Pastikan evaluasi aman dan menghasilkan list
-                    parsed_domain = eval(rec.filter)
-                    if isinstance(parsed_domain, list):
-                        domain = parsed_domain
-                except (SyntaxError, TypeError, NameError):
-                    pass # Biarkan domain kosong jika parsing gagal
-
-            field_name = rec.measured_field_id.name if rec.measured_field_id else False
-
-            # --- Logika Perhitungan Baru ---
+                _logger.warning("Model %s not found for block %s", rec.model_name, rec.name)
+                continue
+            
+            # Prepare domain
+            domain = self._parse_domain(rec.filter) if rec.filter else []
+            
+            # Compute value
             if rec.operation == 'count':
                 rec.record_value = target_model.search_count(domain)
             else:
-                # Untuk operasi agregasi selain 'count'
-                if not field_name or field_name not in target_model._fields:
-                    # Jika field tidak valid atau tidak ada, tidak bisa melanjutkan agregasi
+                if not rec.measured_field_id or rec.measured_field_id.name not in target_model._fields:
                     continue
-
-                # Siapkan aggregate field yang akan diambil dari read_group
+                    
+                field_name = rec.measured_field_id.name
                 aggregate_field = f'{rec.operation}:{field_name}'
-
-                result = target_model.read_group(
-                    domain,
-                    [aggregate_field],
-                    [], # Tidak ada grouping, kita hanya ingin satu nilai agregat
-                    limit=1 # Hanya perlu satu hasil
-                )
-
-                # Ekstraksi nilai dari hasil read_group
-                if result and result[0]:
-                    # Kunci di hasil read_group akan menjadi 'operation_field_name'
-                    # Contoh: 'sum_amount', 'avg_quantity'
-                    computed_key = f'{rec.operation}_{field_name}'
-                    if computed_key in result[0]:
-                        rec.record_value = result[0][computed_key]
-                    # Kasus khusus untuk count jika terpaksa menggunakan read_group (jarang)
-                    elif '__count' in result[0]:
-                        rec.record_value = result[0]['__count']
-
-
+                
+                try:
+                    result = target_model.read_group(
+                        domain,
+                        [aggregate_field],
+                        [],
+                        limit=1
+                    )
+                    
+                    if result and result[0]:
+                        computed_key = f'{rec.operation}_{field_name}'
+                        rec.record_value = result[0].get(computed_key, 0.0)
+                except Exception as e:
+                    _logger.error("Error computing value for block %s: %s", rec.name, e)
+                    rec.record_value = 0.0
+    
+    @api.depends('write_date')
+    def _compute_last_update(self):
+        """Update last update timestamp"""
+        for rec in self:
+            rec.last_update = fields.Datetime.now()
+    
+    # ==== HELPER METHODS ====
+    def _parse_domain(self, filter_str):
+        """Safely parse domain string"""
+        if not filter_str:
+            return []
+            
+        try:
+            domain = literal_eval(filter_str)
+            if isinstance(domain, list):
+                # Replace special variables
+                for i, condition in enumerate(domain):
+                    if isinstance(condition, (tuple, list)) and len(condition) == 3:
+                        field, op, value = condition
+                        if value == "%UID":
+                            domain[i] = (field, op, self.env.user.id)
+                        elif value == "%COMPANY":
+                            domain[i] = (field, op, self.env.company.id)
+                return domain
+        except Exception as e:
+            _logger.error("Error parsing domain: %s", e)
+        return []
+    
+    def _format_number(self, number):
+        """Format large numbers with K, M, G suffixes"""
+        if number == 0:
+            return "0"
+            
+        suffixes = ['', 'K', 'M', 'G', 'T', 'P']
+        magnitude = 0
+        
+        abs_number = abs(number)
+        while abs_number >= 1000 and magnitude < len(suffixes) - 1:
+            magnitude += 1
+            abs_number /= 1000.0
+            
+        sign = '-' if number < 0 else ''
+        
+        # Format based on magnitude
+        if magnitude == 0:
+            # Integer for small numbers
+            formatted = f"{sign}{int(abs_number)}"
+        else:
+            # One decimal for large numbers
+            formatted = f"{sign}{abs_number:.1f}{suffixes[magnitude]}"
+        
+        return formatted
+    
+    def _generate_colors(self, count):
+        """Generate distinct colors for charts"""
+        colors = []
+        hue_step = 360 / max(count, 1)
+        
+        for i in range(count):
+            hue = int(i * hue_step) % 360
+            # Use HSL for consistent brightness and saturation
+            colors.append(f'hsl({hue}, 70%, 60%)')
+        
+        return colors
+    
+    # ==== DEFAULT METHODS ====
+    def _get_default_action(self):
+        """Get default client action"""
+        action_id = self.env.ref('zee_ui.dashboard_view_action', False)
+        return action_id.id if action_id else False
+    
+    # ==== ONCHANGE METHODS ====
     @api.onchange('model_id')
     def _onchange_model_id(self):
-        """Reset operation and measured field when model is changed"""
-        if self.operation or self.measured_field_id:
-            self.operation = False
-            self.measured_field_id = False
-
+        """Reset related fields when model is changed"""
+        self.operation = 'count'
+        self.measured_field_id = False
+        self.group_by_id = False
+        self.tag_fields_ids = [(5, 0, 0)]  # Clear all
+        self.filter = False
+    
+    @api.onchange('type')
+    def _onchange_type(self):
+        """Set defaults based on type"""
+        if self.type == 'graph':
+            self.graph_type = 'bar'
+        elif self.type == 'tile' or self.type == 'kpi':
+            self.fa_icon = self.fa_icon or 'fa-cube'
+        elif self.type == 'list':
+            self.table_limit = 10
+    
+    @api.onchange('measured_field_id')
+    def _onchange_measured_field_id(self):
+        """Set appropriate operation based on field type"""
+        if self.measured_field_id:
+            field_type = self.measured_field_id.ttype
+            if field_type in ['many2one', 'many2many', 'one2many']:
+                self.operation = 'count'
+    
+    # ==== BUSINESS METHODS ====
     def get_dashboard_vals(self, action_id, start_date=None, end_date=None):
         """Fetch block values from js and create chart"""
         block_vals = []
         
-        # Cari semua blok untuk action_id ini
-        blocks = self.env['dashboard.block'].sudo().search(
-            [('client_action_id', '=', int(action_id))]
+        # PERBAIKAN: Gunakan sudo() dengan hati-hati, hanya untuk read
+        blocks = self.env['dashboard.block'].search(
+            [
+                ('client_action_id', '=', int(action_id)), 
+                ('active', '=', True)
+            ]
         )
         
         for rec in blocks:
-            vals = {}
-            
             try:
-                # 1. Penanganan Filter (Configuration Error Check)
-                rec.filter = rec.filter or "[]"
-                filter_list = literal_eval(rec.filter)
-                
-                # Handle special Odoo variables (%UID)
-                for i, condition in enumerate(filter_list):
-                    if isinstance(condition, (tuple, list)) and len(condition) == 3:
-                        field, op, value = condition
-                        if value == "%UID":
-                            filter_list[i] = (field, op, self.env.user.id)
-                
-                # Remove create_date filters
-                filter_list = [item for item in filter_list if not (
-                        isinstance(item, tuple) and item[0] == 'create_date')]
-                
-                # Update filter in record (hanya untuk consistency, tidak wajib disimpan)
-                rec.filter = repr(filter_list)
-            
-                # 2. Siapkan Nilai Dasar (vals)
                 vals = {
                     'id': rec.id,
                     'name': rec.name,
                     'type': rec.type,
-                    'graph_type': rec.graph_type,
-                    'icon': rec.fa_icon,
                     'model_name': rec.model_name,
-                    'model_tag': rec.tag_fields_ids.mapped('name'), # Gunakan .mapped('name') untuk JS
-                    'color': f'background-color: {rec.tile_color};' if rec.tile_color else '#1f6abb;',
-                    'text_color': f'color: {rec.text_color};' if rec.text_color else '#FFFFFF;',
-                    'val_color': f'color: {rec.val_color};' if rec.val_color else '#FFFFFF;',
-                    'icon_color': f'color: {rec.tile_color};' if rec.tile_color else '#1f6abb;',
-                    'height': rec.height,
-                    'width': rec.width,
-                    'translate_x': rec.translate_x,
-                    'translate_y': rec.translate_y,
-                    'data_x': rec.data_x,
-                    'data_y': rec.data_y,
-                    'domain': filter_list,
+                    'active': rec.active,
+                    'grid_position': {
+                        'x': rec.data_x or 0,
+                        'y': rec.data_y or 0,
+                        'w': rec.grid_width or 1,
+                        'h': rec.grid_height or 1
+                    },
+                    'config': self._get_block_config(rec),
+                    'data': self._get_block_data(rec, start_date, end_date),
+                    'last_update': rec.last_update.isoformat() if rec.last_update else None,
+                    'error': None
                 }
-
-                # 3. Logika Pengambilan Data (SQL Query Error Check)
-                domain = expression.AND([filter_list]) # Gunakan filter_list yang sudah di-eval
-                
-                if rec.model_name and hasattr(self.env[rec.model_name], 'get_query'):
-                    try:
-                        query_function = self.env[rec.model_name].get_query
-                        records = []
-
-                        if rec.type == 'list':
-                            # List/Table
-                            self._cr.execute(query_function(
-                                domain, '', rec.measured_field_id, start_date, end_date, group_by=rec.group_by_id
-                            ))
-                            list_data = self._cr.dictfetchall()
-                            vals.update({'list_data': list_data})
-                            
-                        elif rec.type == 'graph':
-                            # Chart/Graph
-                            self._cr.execute(query_function(
-                                domain, rec.operation, rec.measured_field_id,
-                                start_date, end_date, group_by=rec.group_by_id
-                            ))
-                            records = self._cr.dictfetchall()
-                            
-                            x_axis = []
-                            y_axis = []
-                            for record in records:
-                                x_key = rec.group_by_id.name if rec.group_by_id else 'name'
-                                y_key = 'value'
-                                
-                                # Handling multilingual name (jika ada)
-                                if record.get(x_key) and isinstance(record.get(x_key), dict):
-                                    x_axis.append(record.get(x_key).get(self._context.get('lang') or 'en_US'))
-                                else:
-                                    x_axis.append(record.get(x_key))
-                                
-                                y_axis.append(record.get(y_key))
-                                
-                            vals.update({'x_axis': x_axis, 'y_axis': y_axis})
-                            
-                        else: # Tile (Default)
-                            # Tile
-                            self._cr.execute(query_function(
-                                domain, rec.operation, rec.measured_field_id,
-                                start_date, end_date
-                            ))
-                            records = self._cr.dictfetchall()
-                            
-                            if records:
-                                # Logika format angka besar (K/M/G)
-                                magnitude = 0
-                                total = records[0].get('value', 0)
-                                temp_total = abs(total)
-                                while temp_total >= 1000:
-                                    magnitude += 1
-                                    temp_total /= 1000.0
-                                # Pertahankan tanda negatif/positif dari 'total' asli
-                                sign = -1 if total < 0 else 1
-                                val = '%.2f%s' % (temp_total * sign, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
-                                
-                                records[0]['value'] = val
-                                vals.update(records[0])
-                                
-                    except Exception as sql_e:
-                        # Tangani kegagalan eksekusi SQL (Query Error)
-                        _logger.error(f"SQL/Data Error for block {rec.id} ({rec.name}) on model {rec.model_name}: {sql_e}")
-                        vals['error'] = f"Gagal memuat data. Error: {sql_e}"
-                        
-                else:
-                    # Log warning jika model tidak mendukung 'get_query'
-                    _logger.warning("Model '%s' does not support 'get_query' for block %s. Skipping data retrieval.", rec.model_name, rec.id)
-                    vals['error'] = "Model tidak mendukung fungsi get_query."
-            
             except Exception as e:
-                # Tangkap error konfigurasi blok (Filter/Literal Eval Error)
-                _logger.error(f"Configuration Error for block {rec.id}: {e}")
-                vals['error'] = f"Error konfigurasi blok. Error: {e}"
-                # Jika terjadi error di sini, vals mungkin belum terisi, tapi kita harus tetap menambahkan sesuatu ke block_vals
-                if not vals: 
-                     vals = {'id': rec.id, 'name': rec.name, 'error': f"Fatal Error: {e}"}
+                _logger.error("Error preparing block %s: %s", rec.name, e)
+                vals = {
+                    'id': rec.id,
+                    'name': rec.name,
+                    'type': rec.type,
+                    'error': f"Error: {str(e)}",
+                    'config': {},
+                    'data': {}
+                }
             
             block_vals.append(vals)
             
         return block_vals
-
+    
+    def _get_block_config(self, rec):
+        """Get block configuration"""
+        config = {
+            'colors': {
+                'background': rec.tile_color or '#1f6abb',
+                'text': rec.text_color or '#FFFFFF',
+                'value': rec.val_color or '#FFFFFF',
+                'icon': rec.fa_color or '#FFFFFF'
+            },
+            'layout': {
+                'height': rec.height or '300px',
+                'width': rec.width or '100%'
+            }
+        }
+        
+        if rec.type == 'graph':
+            config.update({
+                'chart_type': rec.graph_type or 'bar',
+                'group_by': rec.group_by_id.name if rec.group_by_id else None,
+                'show_legend': True,
+                'show_grid': True
+            })
+        elif rec.type in ['tile', 'kpi']:
+            config.update({
+                'icon': rec.fa_icon or 'fa-cube',
+                'icon_size': rec.icon_size or 'medium',
+                'show_trend': rec.show_trend,
+                'trend_period': rec.trend_period
+            })
+        elif rec.type == 'list':
+            config.update({
+                'columns': rec.tag_fields_ids.mapped('name') if rec.tag_fields_ids else [],
+                'limit': rec.table_limit or 10,
+                'pagination': rec.show_pagination
+            })
+            
+        return config
+    
+    def _get_block_data(self, rec, start_date=None, end_date=None):
+        """Get block data based on type"""
+        try:
+            if not rec.model_name:
+                return {'error': 'No model selected'}
+                
+            target_model = self.env[rec.model_name]
+            domain = self._parse_domain(rec.filter) if rec.filter else []
+            
+            # Add date filters if provided
+            if start_date and end_date:
+                date_domain = [('create_date', '>=', start_date), ('create_date', '<=', end_date)]
+                if domain:
+                    domain = expression.AND([domain, date_domain])
+                else:
+                    domain = date_domain
+            
+            if rec.type == 'list':
+                return self._get_list_data(rec, target_model, domain)
+            elif rec.type == 'graph':
+                return self._get_chart_data(rec, target_model, domain)
+            else:  # tile/kpi
+                return self._get_tile_data(rec, target_model, domain)
+                
+        except Exception as e:
+            _logger.error("Error getting data for block %s: %s", rec.name, e)
+            return {'error': str(e)}
+    
+    def _get_list_data(self, rec, model, domain):
+        """Get table data"""
+        if not rec.tag_fields_ids:
+            return {'error': 'No columns selected for table'}
+            
+        fields = rec.tag_fields_ids.mapped('name')
+        
+        try:
+            records = model.search_read(
+                domain=domain,
+                fields=fields,
+                limit=rec.table_limit or 10,
+                order='id desc'  # Default order by latest
+            )
+            
+            return {
+                'columns': fields,
+                'rows': records,
+                'total': model.search_count(domain),
+                'limit': rec.table_limit or 10
+            }
+        except Exception as e:
+            _logger.error("Error fetching list data: %s", e)
+            return {'error': f"Data fetch error: {str(e)}"}
+    
+    def _get_chart_data(self, rec, model, domain):
+        """Get chart data"""
+        if not rec.group_by_id:
+            return {'error': 'No group by field selected for chart'}
+            
+        group_field = rec.group_by_id.name
+        measure_field = rec.measured_field_id.name if rec.measured_field_id else None
+        
+        try:
+            if measure_field:
+                aggregate_field = f'{rec.operation}:{measure_field}'
+                results = model.read_group(
+                    domain=domain,
+                    fields=[aggregate_field, group_field],
+                    groupby=[group_field],
+                    lazy=False,
+                    orderby=f'{group_field} asc'
+                )
+                
+                labels = []
+                values = []
+                for res in results:
+                    # Handle field display values
+                    label = res[group_field]
+                    if isinstance(label, tuple):
+                        label = label[1]  # Get display name
+                    elif label is False:
+                        label = 'Undefined'
+                    
+                    labels.append(label)
+                    values.append(res.get(f'{rec.operation}_{measure_field}', 0))
+            else:
+                # Count by group
+                results = model.read_group(
+                    domain=domain,
+                    fields=['id'],
+                    groupby=[group_field],
+                    lazy=False,
+                    orderby=f'{group_field} asc'
+                )
+                
+                labels = []
+                values = []
+                for res in results:
+                    label = res[group_field]
+                    if isinstance(label, tuple):
+                        label = label[1]
+                    elif label is False:
+                        label = 'Undefined'
+                    
+                    labels.append(label)
+                    values.append(res.get('__count', 0))
+            
+            return {
+                'labels': labels,
+                'datasets': [{
+                    'label': rec.name,
+                    'data': values,
+                    'backgroundColor': self._generate_colors(len(values))
+                }]
+            }
+        except Exception as e:
+            _logger.error("Error fetching chart data: %s", e)
+            return {'error': f"Chart data error: {str(e)}"}
+    
+    def _get_tile_data(self, rec, model, domain):
+        """Get tile/KPI data"""
+        try:
+            current_value = rec.record_value
+            previous_value = rec.prev_value
+            target_value = rec.target_value
+            
+            # Calculate trend
+            trend = 0
+            trend_direction = 'neutral'
+            
+            if previous_value != 0:
+                trend = ((current_value - previous_value) / abs(previous_value)) * 100
+                if trend > 0:
+                    trend_direction = 'up'
+                elif trend < 0:
+                    trend_direction = 'down'
+            
+            # Calculate achievement percentage
+            achievement = 0
+            if target_value != 0:
+                achievement = (current_value / target_value) * 100
+            
+            # Format numbers
+            formatted_value = self._format_number(current_value)
+            formatted_target = self._format_number(target_value) if target_value != 0 else "0"
+            
+            return {
+                'value': current_value,
+                'formatted_value': formatted_value,
+                'previous_value': previous_value,
+                'target_value': target_value,
+                'formatted_target': formatted_target,
+                'trend': round(trend, 2),
+                'trend_direction': trend_direction,
+                'achievement': round(achievement, 2)
+            }
+        except Exception as e:
+            _logger.error("Error calculating tile data: %s", e)
+            return {
+                'value': 0,
+                'formatted_value': "0",
+                'error': str(e)
+            }
+    
     def get_save_layout(self, grid_data_list):
-        """Function to fetch edited values while editing layout of chart or tile
-         and save them in the database"""
+        """Save edited layout values"""
         for data in grid_data_list:
             block = self.browse(int(data['id']))
             if not block:
                 continue
-            updated_values = {}
-            if data.get('data-x'):
-                updated_values.update({
-                    'translate_x': f"{data['data-x']}px",
-                    'translate_y': f"{data['data-y']}px",
-                    'data_x': data['data-x'],
-                    'data_y': data['data-y'],
+                
+            updates = {}
+            if 'x' in data and 'y' in data:
+                updates.update({
+                    'data_x': int(data['x']),
+                    'data_y': int(data['y'])
                 })
-            if data.get('height'):
-                updated_values.update({
+            
+            if 'w' in data and 'h' in data:
+                updates.update({
+                    'grid_width': int(data['w']),
+                    'grid_height': int(data['h'])
+                })
+            
+            if 'height' in data and 'width' in data:
+                updates.update({
                     'height': f"{data['height']}px",
-                    'width': f"{data['width']}px",
+                    'width': f"{data['width']}px"
                 })
-            if updated_values:
-                block.write(updated_values)
+            
+            if updates:
+                block.write(updates)
+                
+        return {'success': True, 'message': 'Layout saved successfully'}
+    
+    def action_refresh_data(self):
+        """Manual refresh of block data"""
+        self._compute_record_value()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Data Refreshed',
+                'message': 'Dashboard data has been refreshed.',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+    
+    def action_duplicate_block(self):
+        """Duplicate a dashboard block"""
+        self.ensure_one()
+        
+        # Prepare copy values
+        copy_vals = {
+            'name': f"{self.name} (Copy)",
+            'sequence': self.sequence + 1,
+            'data_x': (self.data_x or 0) + 1,
+            'data_y': (self.data_y or 0) + 1,
+        }
+        
+        # Copy the record
+        new_block = self.copy(copy_vals)
+        
+        # Return action to open the new block
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'dashboard.block',
+            'res_id': new_block.id,
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {'form_view_initial_mode': 'edit'}
+        }
+    
+    def action_archive(self):
+        """Archive the block"""
+        self.ensure_one()
+        self.active = False
         return True
+    
+    def action_unarchive(self):
+        """Unarchive the block"""
+        self.ensure_one()
+        self.active = True
+        return True
+    
+    @api.model
+    def create(self, vals):
+        """Override create to set default values"""
+        if 'tile_color' not in vals:
+            # Generate random color if not provided
+            colors = ['#1f6abb', '#2c9faf', '#34a853', '#fbbc05', '#ea4335', 
+                     '#4285f4', '#9c27b0', '#ff9800', '#795548', '#607d8b']
+            vals['tile_color'] = random.choice(colors)
+        
+        if 'fa_icon' not in vals and vals.get('type') in ['tile', 'kpi']:
+            # Set default icon based on type
+            icon_map = {
+                'graph': 'fa-chart-bar',
+                'tile': 'fa-cube',
+                'list': 'fa-table',
+                'kpi': 'fa-chart-line'
+            }
+            vals['fa_icon'] = icon_map.get(vals.get('type'), 'fa-cube')
+        
+        return super(DashboardBlock, self).create(vals)
+    
+    def write(self, vals):
+        """Override write to handle field updates"""
+        # If model is changed, reset related fields
+        if 'model_id' in vals:
+            reset_fields = ['measured_field_id', 'group_by_id', 'filter']
+            for field in reset_fields:
+                if field not in vals:
+                    vals[field] = False
+            # Clear many2many fields
+            self.tag_fields_ids = [(5, 0, 0)]
+        
+        return super(DashboardBlock, self).write(vals)
