@@ -84,12 +84,12 @@ export class DashboardTile extends Component {
     }
 }
 DashboardTile.template = xml`
-<div class="resize-drag dashboard-tile shadow item"
+<div class="resize-drag dashboard-tile shadow grid-stack-item"
          t-on-dblclick="getRecords"
          t-att-data-id="this.props.widget.id"
          t-att-style="this.props.widget.color+this.props.widget.text_color+ '; height:' + this.props.widget.height + '; width:' + this.props.widget.width + '; min-height:110px;'">
        
-    <div t-att-style="this.props.widget.color+this.props.widget.text_color+'; height: 100%;'">
+    <div class="grid-stack-item-content" t-att-style="this.props.widget.color+this.props.widget.text_color+'; height: 100%;'">
         <div t-att-class="'justify-content-between ' + (this.state.IsAdmin ? 'd-flex' : 'd-none')">
             <!-- Edit and Delete Icons -->
             <a class="block_setting tile_edit tile-container__setting-icon" style="color:black;" t-on-click="(ev) => this.getConfiguration(ev)">
@@ -127,7 +127,6 @@ DashboardTile.template = xml`
                     <span t-esc="this.props.widget.name"
                         class="d-block font-weight-bold text-start"
                         style="font-size: 1.2rem;"></span>
-                    <span class="d-block text-muted text-start" style="font-size: 0.9rem;" t-esc="this.props.widget.sub_title"/>
                 </h2>
                 
             </div>

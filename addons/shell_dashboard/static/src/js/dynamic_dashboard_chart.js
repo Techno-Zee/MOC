@@ -20,20 +20,12 @@ export class DashboardChart extends Component {
         this.state = useState({IsAdmin: false });
         this.CheckAdmin();
 
-        // onWillStart(async () => {
-        //     // Load required libraries
-        //     await loadJS("https://cdn.jsdelivr.net/npm/apexcharts@3.35.3/dist/apexcharts.min.js");
-        //     await loadJS("https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js");
-        //     await loadJS("https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js");
-        // });
-
         onMounted(() => this.renderChart());
     }
 
     async CheckAdmin() {
         try {
             const data = await rpc("/api/shell_dashboard/check_access", {});
-            // data: { is_user: true/false, is_manager: true/false, is_admin: true/false }
 
             // Simpan status ke state
             this.state.IsAdmin = data.is_admin;
