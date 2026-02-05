@@ -12,7 +12,7 @@
         </div>
         <div class="input-group-append">
           <span class="input-group-text">
-            <i t-att-class="state.value || 'fa fa-home'" />
+            <i t-att-class="state.value || 'fa fa-home'" id="icon-picker-icon" />
           </span>
         </div>
       </div>
