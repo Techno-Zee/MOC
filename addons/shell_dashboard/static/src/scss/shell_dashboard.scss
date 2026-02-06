@@ -1,0 +1,266 @@
+.shell-dashboard-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    
+    .dashboard-header {
+        background: #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 1000;
+        
+        .date-picker-popup {
+            top: 100%;
+            right: 0;
+            z-index: 1050;
+            min-width: 300px;
+        }
+    }
+    
+    .dashboard-content {
+        flex: 1;
+        overflow: auto;
+        background: #f5f7fa;
+        
+        .grid-stack {
+            min-height: 100%;
+            
+            .grid-stack-item {
+                transition: all 0.3s ease;
+                
+                .grid-stack-item-content {
+                    background: white;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    height: 100%;
+                    
+                    &:hover {
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    }
+                }
+            }
+        }
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255,255,255,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+}
+
+// Tile Styles
+.dashboard-tile {
+    .tile-header {
+        background: #f8f9fa;
+        
+        .tile-title {
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+    
+    .tile-body {
+        min-height: 120px;
+        
+        .tile-value {
+            font-weight: 700;
+        }
+        
+        .tile-icon {
+            .icon-container {
+                transition: transform 0.3s ease;
+                
+                &:hover {
+                    transform: scale(1.1);
+                }
+            }
+        }
+    }
+    
+    .tile-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        cursor: pointer;
+        opacity: 0;
+        
+        &:hover {
+            background: rgba(0,0,0,0.05);
+            opacity: 1;
+        }
+    }
+}
+
+// Chart Styles
+.dashboard-chart {
+    .chart-header {
+        background: #f8f9fa;
+    }
+    
+    .chart-body {
+        .chart-container {
+            canvas {
+                max-width: 100%;
+            }
+        }
+        
+        .chart-legend {
+            .legend-item {
+                .legend-color {
+                    width: 12px;
+                    height: 12px;
+                    border-radius: 2px;
+                    display: inline-block;
+                }
+                
+                .legend-label {
+                    font-size: 0.8rem;
+                }
+            }
+        }
+    }
+    
+    .chart-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        cursor: pointer;
+        opacity: 0;
+        
+        &:hover {
+            background: rgba(0,0,0,0.05);
+            opacity: 1;
+        }
+    }
+}
+
+// Table Styles
+.dashboard-table {
+    .table-header {
+        background: #f8f9fa;
+    }
+    
+    .table-body {
+        .table-responsive {
+            &::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            
+            &::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 3px;
+            }
+        }
+        
+        table {
+            th {
+                font-weight: 600;
+                font-size: 0.85rem;
+                background: #f8f9fa;
+            }
+            
+            td {
+                font-size: 0.85rem;
+                vertical-align: middle;
+            }
+            
+            tr {
+                cursor: pointer;
+                
+                &:hover {
+                    background: #f8f9fa;
+                }
+            }
+        }
+    }
+}
+
+// KPI Styles
+.dashboard-kpi {
+    position: relative;
+    
+    .kpi-header {
+        background: #f8f9fa;
+    }
+    
+    .kpi-body {
+        min-height: 150px;
+        
+        .kpi-main-value {
+            font-weight: 700;
+        }
+        
+        .kpi-metrics {
+            .progress {
+                background: rgba(0,0,0,0.1);
+            }
+        }
+    }
+    
+    .kpi-icon {
+        opacity: 0.2;
+    }
+    
+    .kpi-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        cursor: pointer;
+        opacity: 0;
+        
+        &:hover {
+            background: rgba(0,0,0,0.05);
+            opacity: 1;
+        }
+    }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+    .shell-dashboard-container {
+        .dashboard-header {
+            flex-wrap: wrap;
+            gap: 10px;
+            
+            .date-filter-container {
+                order: 3;
+                width: 100%;
+                
+                .date-picker-popup {
+                    left: 0;
+                    right: auto;
+                }
+            }
+        }
+    }
+    
+    .grid-stack-item {
+        min-width: 100% !important;
+    }
+}
+
+// Animation for grid items
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.grid-stack-item {
+    animation: fadeIn 0.3s ease;
+}

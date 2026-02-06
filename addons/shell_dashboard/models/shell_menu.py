@@ -52,7 +52,7 @@ class DashboardMenu(models.Model):
         for vals in vals_list:
             action = self.env['ir.actions.client'].create({
                 'name': vals['name'],
-                'tag': 'OdooDashboard',
+                'tag': 'shell_dashboard.action',
             })
 
             menu = self.env['ir.ui.menu'].create({

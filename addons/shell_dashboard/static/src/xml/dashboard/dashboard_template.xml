@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="shell_dashboard.Dashboard" owl="1">
+        <div class="shell-dashboard-container">
+            <!-- Header -->
+            <div class="dashboard-header d-flex justify-content-between align-items-center p-3 border-bottom">
+                <!-- Left Section: Add Items -->
+                <div class="d-flex gap-2 align-items-center">
+                    <div t-att-class="'dropdown ' + (state.IsAdmin ? '' : 'd-none')">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fa fa-plus me-1"/> Add Block
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('tile')">
+                                <i class="fa fa-square me-2"/> Tile
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('kpi')">
+                                <i class="fa fa-chart-line me-2"/> KPI
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'bar')">
+                                <i class="fa fa-bar-chart me-2"/> Bar Chart
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'line')">
+                                <i class="fa fa-line-chart me-2"/> Line Chart
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'pie')">
+                                <i class="fa fa-pie-chart me-2"/> Pie Chart
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'donut')">
+                                <i class="fa fa-circle me-2"/> Donut Chart
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'radar')">
+                                <i class="fa fa-bullseye me-2"/> Radar Chart
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('list')">
+                                <i class="fa fa-table me-2"/> Table
+                            </a></li>
+                        </ul>
+                    </div>
+                    
+                    <button t-if="state.IsAdmin" 
+                            t-on-click="toggleEditMode" 
+                            class="btn" 
+                            t-att-class="state.editMode ? 'btn-success' : 'btn-outline-secondary'">
+                        <i class="fa" t-att-class="state.editMode ? 'fa-save' : 'fa-edit'"/>
+                        <span t-esc="state.editMode ? ' Save Layout' : ' Edit Layout'"/>
+                    </button>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fa fa-download me-1"/> Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="exportAsPDF">
+                                <i class="fa fa-file-pdf-o me-2"/> PDF
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="exportAsPNG">
+                                <i class="fa fa-file-image-o me-2"/> PNG
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="exportAsCSV">
+                                <i class="fa fa-file-excel-o me-2"/> CSV
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Right Section: Filters -->
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="date-filter-container position-relative">
+                        <button class="btn btn-outline-primary" t-on-click="toggleDatePicker">
+                            <i class="fa fa-calendar me-1"/>
+                            <span t-esc="getDateRangeText()"/>
+                        </button>
+                        <div t-if="state.showDatePicker" class="date-picker-popup position-absolute bg-white border rounded p-3 shadow">
+                            <div class="d-flex gap-2 mb-2">
+                                <div>
+                                    <label class="form-label small">From</label>
+                                    <input type="date" class="form-control form-control-sm" 
+                                           t-model="state.startDate"/>
+                                </div>
+                                <div>
+                                    <label class="form-label small">To</label>
+                                    <input type="date" class="form-control form-control-sm" 
+                                           t-model="state.endDate"/>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button t-on-click="applyDateFilter" class="btn btn-sm btn-primary flex-grow-1">
+                                    Apply
+                                </button>
+                                <button t-on-click="resetDateFilter" class="btn btn-sm btn-outline-secondary">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button t-on-click="toggleAutoRefresh" class="btn" 
+                            t-att-class="state.autoRefresh ? 'btn-warning' : 'btn-outline-secondary'">
+                        <i class="fa" t-att-class="state.autoRefresh ? 'fa-pause' : 'fa-refresh'"/>
+                        <span t-if="state.autoRefresh" t-esc="' ' + state.refreshCountdown + 's'"/>
+                    </button>
+                    
+                    <button t-on-click="refreshDashboard" class="btn btn-outline-secondary">
+                        <i class="fa fa-sync"/>
+                    </button>
+                </div>
+                
+                
+            </div>
+            
+            <!-- Dashboard Content -->
+            <div class="dashboard-content p-3">
+                <div t-ref="gridContainer" class="grid-stack"/>
+            </div>
+            
+            <!-- Loading Overlay -->
+            <div t-if="state.loading" class="loading-overlay">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

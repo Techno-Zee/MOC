@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+    
+    <!-- MAIN DASHBOARD TEMPLATE -->
+    <t t-name="shell_dashboard.Dashboard" owl="1">
+        <div class="shell-dashboard-container">
+            <!-- Header -->
+            <div class="dashboard-header d-flex justify-content-between align-items-center p-3 border-bottom">
+                <!-- Left Section: Add Items -->
+                <div class="d-flex gap-2 align-items-center">
+                    <div t-att-class="'dropdown ' + (state.IsAdmin ? '' : 'd-none')">
+                        <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fa fa-plus me-1"/> Add Block
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('tile')">
+                                <i class="fa fa-square me-2"/> Tile
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('kpi')">
+                                <i class="fa fa-chart-line me-2"/> KPI
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'bar')">
+                                <i class="fa fa-bar-chart me-2"/> Bar Chart
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'line')">
+                                <i class="fa fa-line-chart me-2"/> Line Chart
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'pie')">
+                                <i class="fa fa-pie-chart me-2"/> Pie Chart
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'donut')">
+                                <i class="fa fa-circle me-2"/> Donut Chart
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'radar')">
+                                <i class="fa fa-bullseye me-2"/> Radar Chart
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('list')">
+                                <i class="fa fa-table me-2"/> Table
+                            </a></li>
+                        </ul>
+                    </div>
+                    
+                    <button t-if="state.IsAdmin" 
+                            t-on-click="toggleEditMode" 
+                            class="btn" 
+                            t-att-class="state.editMode ? 'btn-success' : 'btn-outline-secondary'">
+                        <i class="fa" t-att-class="state.editMode ? 'fa-save' : 'fa-edit'"/>
+                        <span t-esc="state.editMode ? ' Save Layout' : ' Edit Layout'"/>
+                    </button>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fa fa-download me-1"/> Export
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="exportAsPDF">
+                                <i class="fa fa-file-pdf-o me-2"/> PDF
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="exportAsPNG">
+                                <i class="fa fa-file-image-o me-2"/> PNG
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="exportAsCSV">
+                                <i class="fa fa-file-excel-o me-2"/> CSV
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Center Section: Filters -->
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="date-filter-container position-relative">
+                        <button class="btn btn-outline-primary" t-on-click="toggleDatePicker">
+                            <i class="fa fa-calendar me-1"/>
+                            <span t-esc="getDateRangeText()"/>
+                        </button>
+                        <div t-if="state.showDatePicker" class="date-picker-popup position-absolute bg-white border rounded p-3 shadow">
+                            <div class="d-flex gap-2 mb-2">
+                                <div>
+                                    <label class="form-label small">From</label>
+                                    <input type="date" class="form-control form-control-sm" 
+                                           t-model="state.startDate"/>
+                                </div>
+                                <div>
+                                    <label class="form-label small">To</label>
+                                    <input type="date" class="form-control form-control-sm" 
+                                           t-model="state.endDate"/>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button t-on-click="applyDateFilter" class="btn btn-sm btn-primary flex-grow-1">
+                                    Apply
+                                </button>
+                                <button t-on-click="resetDateFilter" class="btn btn-sm btn-outline-secondary">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button t-on-click="toggleAutoRefresh" class="btn" 
+                            t-att-class="state.autoRefresh ? 'btn-warning' : 'btn-outline-secondary'">
+                        <i class="fa" t-att-class="state.autoRefresh ? 'fa-pause' : 'fa-refresh'"/>
+                        <span t-if="state.autoRefresh" t-esc="' ' + state.refreshCountdown + 's'"/>
+                    </button>
+                    
+                    <button t-on-click="refreshDashboard" class="btn btn-outline-secondary">
+                        <i class="fa fa-reload"/>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Dashboard Content -->
+            <div class="dashboard-content p-3">
+                <div t-ref="gridContainer" class="grid-stack"/>
+            </div>
+            
+            <!-- Loading Overlay -->
+            <div t-if="state.loading" class="loading-overlay">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </t>
+    
+    <!-- TILE COMPONENT TEMPLATE -->
+    <t t-name="shell_dashboard.Tile" owl="1">
+        <div class="grid-stack-item" 
+             t-att-data-gs-x="props.block.grid_position.x"
+             t-att-data-gs-y="props.block.grid_position.y"
+             t-att-data-gs-width="props.block.grid_position.w"
+             t-att-data-gs-height="props.block.grid_position.h"
+             t-att-data-id="props.block.id">
+            <div class="grid-stack-item-content dashboard-tile shadow-sm border rounded">
+                <!-- Block Header with Actions -->
+                <div class="tile-header d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <h6 class="tile-title mb-0 fw-bold" t-esc="props.block.name"/>
+                    <div t-if="props.isEditable" class="tile-actions">
+                        <button t-on-click.stop="configureBlock" class="btn btn-sm btn-outline-secondary">
+                            <i class="fa fa-cog"/>
+                        </button>
+                        <button t-on-click.stop="deleteBlock" class="btn btn-sm btn-outline-danger ms-1">
+                            <i class="fa fa-trash"/>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tile Content -->
+                <div class="tile-body p-3 d-flex align-items-center justify-content-between"
+                     t-att-style="'background-color: ' + props.block.config.colors.background">
+                    <div class="tile-info">
+                        <div class="tile-value display-5 fw-bold mb-1" 
+                             t-att-style="'color: ' + props.block.config.colors.value">
+                            <t t-esc="props.block.data.formatted_value"/>
+                        </div>
+                        <div class="tile-label small text-muted" 
+                             t-att-style="'color: ' + props.block.config.colors.text">
+                            <t t-esc="props.block.name"/>
+                        </div>
+                        
+                        <!-- Trend Indicator -->
+                        <div t-if="props.block.data.trend_direction !== 'neutral'" 
+                             class="trend-indicator mt-2">
+                            <span t-att-class="'badge ' + getTrendClass(props.block.data.trend_direction)">
+                                <i t-att-class="getTrendIcon(props.block.data.trend_direction)"/>
+                                <t t-esc="Math.abs(props.block.data.trend).toFixed(1) + '%'"/>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="tile-icon">
+                        <div class="icon-container rounded-circle p-3"
+                             t-att-style="'background-color: ' + props.block.config.colors.icon + '; opacity: 0.1'">
+                            <i t-att-class="props.block.config.icon + ' fa-2x'"
+                               t-att-style="'color: ' + props.block.config.colors.icon"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Target Progress -->
+                <div t-if="props.block.data.target_value > 0" class="tile-footer px-3 pb-3">
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" 
+                             role="progressbar" 
+                             t-att-style="'width: ' + Math.min(props.block.data.achievement, 100) + '%;'"/>
+                    </div>
+                    <div class="d-flex justify-content-between small mt-1">
+                        <span>Target: <t t-esc="props.block.data.formatted_target"/></span>
+                        <span><t t-esc="props.block.data.achievement.toFixed(1)"/>%</span>
+                    </div>
+                </div>
+                
+                <!-- Double-click overlay for record access -->
+                <div class="tile-overlay" t-on-dblclick.stop="openRecords"/>
+            </div>
+        </div>
+    </t>
+    
+    <!-- CHART COMPONENT TEMPLATE -->
+    <t t-name="shell_dashboard.Chart" owl="1">
+        <div class="grid-stack-item" 
+             t-att-data-gs-x="props.block.grid_position.x"
+             t-att-data-gs-y="props.block.grid_position.y"
+             t-att-data-gs-width="props.block.grid_position.w"
+             t-att-data-gs-height="props.block.grid_position.h"
+             t-att-data-id="props.block.id">
+            <div class="grid-stack-item-content dashboard-chart shadow-sm border rounded">
+                <!-- Chart Header -->
+                <div class="chart-header d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <h6 class="chart-title mb-0 fw-bold" t-esc="props.block.name"/>
+                    <div t-if="props.isEditable" class="chart-actions">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                    type="button" 
+                                    data-bs-toggle="dropdown">
+                                <i class="fa fa-ellipsis-h"/>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" t-on-click.stop="configureBlock">
+                                    <i class="fa fa-cog me-2"/> Configure
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" t-on-click.stop="exportChart('png')">
+                                    <i class="fa fa-image me-2"/> Export as PNG
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" t-on-click.stop="exportChart('pdf')">
+                                    <i class="fa fa-file-pdf-o me-2"/> Export as PDF
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" t-on-click.stop="exportChart('csv')">
+                                    <i class="fa fa-file-excel-o me-2"/> Export as CSV
+                                </a></li>
+                                <li><hr class="dropdown-divider"/></li>
+                                <li><a class="dropdown-item text-danger" href="#" t-on-click.stop="deleteBlock">
+                                    <i class="fa fa-trash me-2"/> Delete
+                                </a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart Body -->
+                <div class="chart-body p-3">
+                    <div class="chart-container position-relative" style="height: 250px;">
+                        <canvas t-ref="chartCanvas"/>
+                    </div>
+                    
+                    <!-- Chart Legend -->
+                    <div t-if="props.block.data.labels  props.block.data.labels.length > 0" 
+                         class="chart-legend mt-2">
+                        <div class="legend-items d-flex flex-wrap gap-2 justify-content-center">
+                            <t t-foreach="props.block.data.labels" t-as="label" t-key="label_index">
+                                <div class="legend-item d-flex align-items-center">
+                                    <span class="legend-color me-1" 
+                                          t-att-style="'background-color: ' + getChartColor(label_index)"/>
+                                    <span class="legend-label small" t-esc="label"/>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chart Footer -->
+                <div class="chart-footer px-3 pb-2 border-top">
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Last updated: <t t-esc="formatDate(props.block.last_update)"/></span>
+                        <span>Double-click to view records</span>
+                    </div>
+                </div>
+                
+                <!-- Double-click overlay -->
+                <div class="chart-overlay" t-on-dblclick.stop="openRecords"/>
+            </div>
+        </div>
+    </t>
+    
+    <!-- TABLE COMPONENT TEMPLATE -->
+    <t t-name="shell_dashboard.Table" owl="1">
+        <div class="grid-stack-item" 
+             t-att-data-gs-x="props.block.grid_position.x"
+             t-att-data-gs-y="props.block.grid_position.y"
+             t-att-data-gs-width="props.block.grid_position.w"
+             t-att-data-gs-height="props.block.grid_position.h"
+             t-att-data-id="props.block.id">
+            <div class="grid-stack-item-content dashboard-table shadow-sm border rounded">
+                <!-- Table Header -->
+                <div class="table-header d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <h6 class="table-title mb-0 fw-bold" t-esc="props.block.name"/>
+                    <div t-if="props.isEditable" class="table-actions">
+                        <button t-on-click.stop="configureBlock" class="btn btn-sm btn-outline-secondary">
+                            <i class="fa fa-cog"/>
+                        </button>
+                        <button t-on-click.stop="deleteBlock" class="btn btn-sm btn-outline-danger ms-1">
+                            <i class="fa fa-trash"/>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Table Body -->
+                <div class="table-body">
+                    <div class="table-responsive" style="max-height: 300px;">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <t t-foreach="props.block.data.columns" t-as="column" t-key="column_index">
+                                        <th class="text-nowrap" t-esc="column"/>
+                                    </t>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="props.block.data.rows" t-as="row" t-key="row_index">
+                                    <tr t-on-click="() => openRecord(row)">
+                                        <t t-foreach="row" t-as="cell" t-key="cell_index">
+                                            <td class="text-nowrap" t-esc="cell"/>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <t t-if="props.block.data.rows.length === 0">
+                        <div class="text-center py-5 text-muted">
+                            <i class="fa fa-database fa-2x mb-2"/>
+                            <p class="mb-0">No data available</p>
+                        </div>
+                    </t>
+                </div>
+                
+                <!-- Table Footer -->
+                <div class="table-footer px-3 py-2 border-top">
+                    <div class="d-flex justify-content-between align-items-center small">
+                        <span>Showing <t t-esc="props.block.data.rows.length"/> of 
+                              <t t-esc="props.block.data.total"/> records</span>
+                        <t t-if="props.block.data.rows.length >= props.block.config.limit">
+                            <span class="text-warning">
+                                <i class="fa fa-info-circle me-1"/> Limited to 
+                                <t t-esc="props.block.config.limit"/> rows
+                            </span>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+    
+    <!-- KPI COMPONENT TEMPLATE -->
+    <t t-name="shell_dashboard.KPI" owl="1">
+        <div class="grid-stack-item" 
+             t-att-data-gs-x="props.block.grid_position.x"
+             t-att-data-gs-y="props.block.grid_position.y"
+             t-att-data-gs-width="props.block.grid_position.w"
+             t-att-data-gs-height="props.block.grid_position.h"
+             t-att-data-id="props.block.id">
+            <div class="grid-stack-item-content dashboard-kpi shadow-sm border rounded">
+                <!-- KPI Header -->
+                <div class="kpi-header d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <h6 class="kpi-title mb-0 fw-bold" t-esc="props.block.name"/>
+                    <div t-if="props.isEditable" class="kpi-actions">
+                        <button t-on-click.stop="configureBlock" class="btn btn-sm btn-outline-secondary">
+                            <i class="fa fa-cog"/>
+                        </button>
+                        <button t-on-click.stop="deleteBlock" class="btn btn-sm btn-outline-danger ms-1">
+                            <i class="fa fa-trash"/>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- KPI Body -->
+                <div class="kpi-body p-3 d-flex flex-column align-items-center"
+                     t-att-style="'background-color: ' + props.block.config.colors.background">
+                    <!-- Main Value -->
+                    <div class="kpi-main-value display-4 fw-bold mb-2"
+                         t-att-style="'color: ' + props.block.config.colors.value">
+                        <t t-esc="props.block.data.formatted_value"/>
+                    </div>
+                    
+                    <!-- KPI Label -->
+                    <div class="kpi-label mb-3"
+                         t-att-style="'color: ' + props.block.config.colors.text">
+                        <t t-esc="props.block.name"/>
+                    </div>
+                    
+                    <!-- Trend and Target -->
+                    <div class="kpi-metrics w-100">
+                        <!-- Trend -->
+                        <div t-if="props.block.data.trend_direction !== 'neutral'" 
+                             class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small">Trend (<t t-esc="props.block.config.trend_period"/>)</span>
+                            <span t-att-class="'badge ' + getTrendClass(props.block.data.trend_direction)">
+                                <i t-att-class="getTrendIcon(props.block.data.trend_direction)"/>
+                                <t t-esc="Math.abs(props.block.data.trend).toFixed(1) + '%'"/>
+                            </span>
+                        </div>
+                        
+                        <!-- Target -->
+                        <div t-if="props.block.data.target_value > 0" 
+                             class="d-flex justify-content-between align-items-center">
+                            <span class="small">Target Achievement</span>
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1 me-2" style="width: 100px; height: 8px;">
+                                    <div class="progress-bar" 
+                                         role="progressbar" 
+                                         t-att-style="'width: ' + Math.min(props.block.data.achievement, 100) + '%;'"/>
+                                </div>
+                                <span class="small">
+                                    <t t-esc="props.block.data.achievement.toFixed(1)"/>%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- KPI Icon -->
+                <div class="kpi-icon position-absolute" style="top: 10px; right: 10px;">
+                    <i t-att-class="props.block.config.icon + ' fa-lg'"
+                       t-att-style="'color: ' + props.block.config.colors.icon"/>
+                </div>
+                
+                <!-- Double-click overlay -->
+                <div class="kpi-overlay" t-on-dblclick.stop="openRecords"/>
+            </div>
+        </div>
+    </t>
+    
+</templates>

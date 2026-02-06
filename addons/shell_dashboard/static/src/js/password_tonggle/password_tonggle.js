@@ -19,8 +19,8 @@ patch(CharFieldBase.prototype, {
         // toggle the icon (using the event target)
         const icon = ev.currentTarget;
         if (icon) {
-            icon.classList.toggle("bi-eye");
-            icon.classList.toggle("bi-eye-slash");
+            icon.classList.toggle("fa-eye");
+            icon.classList.toggle("fa-eye-slash");
         }
     }
 }); 

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template name="shell_dashboard.Tile" xml:space="preserve">
+    <t t-name="shell_dashboard.Tile" owl="1">
+        <div class="grid-stack-item" 
+             t-att-data-gs-x="props.block.grid_position.x"
+             t-att-data-gs-y="props.block.grid_position.y"
+             t-att-data-gs-width="props.block.grid_position.w"
+             t-att-data-gs-height="props.block.grid_position.h"
+             t-att-data-id="props.block.id">
+            <div class="grid-stack-item-content dashboard-tile shadow-sm border rounded">
+                <!-- Block Header with Actions -->
+                <div class="tile-header d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <h6 class="tile-title mb-0 fw-bold" t-esc="props.block.name"/>
+                    <div t-if="props.isEditable" class="tile-actions">
+                        <button t-on-click.stop="configureBlock" class="btn btn-sm btn-outline-secondary">
+                            <i class="fa fa-cog"/>
+                        </button>
+                        <button t-on-click.stop="deleteBlock" class="btn btn-sm btn-outline-danger ms-1">
+                            <i class="fa fa-trash"/>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Tile Content -->
+                <div class="tile-body p-3 d-flex align-items-center justify-content-between"
+                     t-att-style="'background-color: ' + props.block.config.colors.background">
+                    <div class="tile-info">
+                        <div class="tile-value display-5 fw-bold mb-1" 
+                             t-att-style="'color: ' + props.block.config.colors.value">
+                            <t t-esc="props.block.data.formatted_value"/>
+                        </div>
+                        <div class="tile-label small text-muted" 
+                             t-att-style="'color: ' + props.block.config.colors.text">
+                            <t t-esc="props.block.name"/>
+                        </div>
+                        
+                        <!-- Trend Indicator -->
+                        <div t-if="props.block.data.trend_direction !== 'neutral'" 
+                             class="trend-indicator mt-2">
+                            <span t-att-class="'badge ' + getTrendClass(props.block.data.trend_direction)">
+                                <i t-att-class="getTrendIcon(props.block.data.trend_direction)"/>
+                                <t t-esc="Math.abs(props.block.data.trend).toFixed(1) + '%'"/>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="tile-icon">
+                        <div class="icon-container rounded-circle p-3"
+                             t-att-style="'background-color: ' + props.block.config.colors.icon + '; opacity: 0.1'">
+                            <i t-att-class="props.block.config.icon + ' fa-2x'"
+                               t-att-style="'color: ' + props.block.config.colors.icon"/>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Target Progress -->
+                <div t-if="props.block.data.target_value > 0" class="tile-footer px-3 pb-3">
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" 
+                             role="progressbar" 
+                             t-att-style="'width: ' + Math.min(props.block.data.achievement, 100) + '%;'"/>
+                    </div>
+                    <div class="d-flex justify-content-between small mt-1">
+                        <span>Target: <t t-esc="props.block.data.formatted_target"/></span>
+                        <span><t t-esc="props.block.data.achievement.toFixed(1)"/>%</span>
+                    </div>
+                </div>
+                
+                <!-- Double-click overlay for record access -->
+                <div class="tile-overlay" t-on-dblclick.stop="openRecords"/>
+            </div>
+        </div>
+    </t>
+</template>

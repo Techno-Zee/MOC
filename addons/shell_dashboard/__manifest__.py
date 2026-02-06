@@ -39,17 +39,10 @@ yang dibangun dengan jQuery untuk kebutuhan visualisasi data di backend Odoo.
 
     'assets': {
         'web.assets_backend': [
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css',
-            'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js',
-            'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js',
-            'https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js',
             
             # Libraries 
-            'shell_dashboard/static/lib/jspdf/jspdf.min.js',
+            'shell_dashboard/static/lib/chartjs/chart.umd.min.js',
             'shell_dashboard/static/lib/html2pdf/html2pdf.bundle.min.js',
-            'shell_dashboard/static/lib/html2canvas/html2canvas.min.js',
-            'shell_dashboard/static/lib/apexcharts/dist/apexcharts.min.js',
-            'shell_dashboard/static/lib/jspdf/dist/jspdf.umd.min.js',
             'shell_dashboard/static/lib/gridstack/dist/gridstack-all.js',
             'shell_dashboard/static/lib/gridstack/dist/gridstack.min.css',
             

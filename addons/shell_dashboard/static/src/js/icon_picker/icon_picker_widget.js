@@ -4,7 +4,7 @@ import { Component, useState, onMounted, onWillUnmount, useRef } from "@odoo/owl
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 
 export class IconPickerField extends Component {
-    static template = "odoo_dynamic_dashboard.IconPickerField";
+    static template = "shell_dashboard.IconPickerField";
     static props = {
         ...standardFieldProps,
     };
