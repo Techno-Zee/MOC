@@ -73,7 +73,6 @@
                             <group string="Color Scheme">
                                 <field name="tile_color" widget="color" readonly="edit_mode == False" />
                                 <field name="text_color" widget="color" readonly="edit_mode == False" />
-                                <field name="val_color" widget="color" readonly="edit_mode == False" />
                                 <field name="fa_color" widget="color" readonly="edit_mode == False" />
                             </group>
                         </page>

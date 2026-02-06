@@ -121,11 +121,6 @@ class DashboardBlock(models.Model):
         default="#FFFFFF", 
         help='Text Color'
     )
-    val_color = fields.Char(
-        string="Value Color", 
-        default="#FFFFFF", 
-        help='Value Color'
-    )
     fa_color = fields.Char(
         string="Icon Color", 
         default="#FFFFFF", 
@@ -190,7 +185,7 @@ class DashboardBlock(models.Model):
     )
     edit_mode = fields.Boolean(
         string="Edit Mode", 
-        default=False, 
+        default=True, 
         help="Enable to edit chart and tile"
     )
     last_update = fields.Datetime(
@@ -343,6 +338,7 @@ class DashboardBlock(models.Model):
                 self.operation = 'count'
     
     # ==== BUSINESS METHODS ====
+    @api.model
     def get_dashboard_vals(self, action_id, start_date=None, end_date=None):
         """Fetch block values from js and create chart"""
         block_vals = []
@@ -395,7 +391,6 @@ class DashboardBlock(models.Model):
             'colors': {
                 'background': rec.tile_color or '#1f6abb',
                 'text': rec.text_color or '#FFFFFF',
-                'value': rec.val_color or '#FFFFFF',
                 'icon': rec.fa_color or '#FFFFFF'
             },
             'layout': {
@@ -589,7 +584,7 @@ class DashboardBlock(models.Model):
                 'formatted_value': "0",
                 'error': str(e)
             }
-    
+    @api.model
     def get_save_layout(self, grid_data_list):
         """Save edited layout values"""
         for data in grid_data_list:

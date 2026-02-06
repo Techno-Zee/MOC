@@ -3,7 +3,7 @@
     <!-- Shell Dashboard Main View -->
     <record id="dashboard_view_action" model="ir.actions.client">
         <field name="name">Shell Dashboard</field>
-        <field name="tag">OdooDashboard</field>
+        <field name="tag">shell_dashboard.action</field>
     </record>
     
 </odoo>
