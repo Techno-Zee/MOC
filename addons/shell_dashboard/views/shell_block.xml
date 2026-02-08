@@ -12,13 +12,13 @@
                     <button name="unlink" string="Delete" type="object" class="btn-danger" icon="fa-trash" confirm="Are you sure you want to delete this block?" />
                     <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-eye-slash" invisible="active == True" />
                     <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-eye" invisible="active == False" />
-                    <field name="type" widget="statusbar" required="1" readonly="edit_mode == False" />
+                    <field name="type" widget="statusbar" required="1" />
                 </header>
                 <sheet>
                     <!-- Header Section -->
                     <div class="oe_title">
                         <h1>
-                            <field name="name" class="oe_inline" placeholder="Block Name" required="1" readonly="edit_mode == False" />
+                            <field name="name" class="oe_inline" placeholder="Block Name" required="1" />
                         </h1>
                         <div>
                             <field name="type" required="1" />
@@ -30,15 +30,15 @@
                         <page string="Configuration">
                             <group>
                                 <group string="Data Source">
-                                    <field name="model_id" required="1" options="{'no_create_edit':True,'no_create': True}" readonly="edit_mode == False" />
+                                    <field name="model_id" required="1" options="{'no_create_edit':True,'no_create': True}" />
                                     <field name="model_name" invisible="1" />
                                     <field name="description" invisible="type == 'tile'" placeholder="Enter description..." />
                                 </group>
                                 <group string="Aggregation">
-                                    <field name="operation" required="1" readonly="edit_mode == False" />
-                                    <field name="measured_field_id" required="operation in ['sum','avg','min','max']" readonly="edit_mode == False" options="{'no_create_edit':True, 'no_create': True}" />
-                                    <field name="filter" widget="domain" options="{'model': 'model_name'}" readonly="edit_mode == False" />
-                                    <field name="group_by_id" invisible="type != 'graph'" readonly="edit_mode == False" />
+                                    <field name="operation" required="1" />
+                                    <field name="measured_field_id" required="operation in ['sum','avg','min','max']"  options="{'no_create_edit':True, 'no_create': True}" />
+                                    <field name="filter" widget="domain" options="{'model': 'model_name'}" />
+                                    <field name="group_by_id" invisible="type != 'graph'" />
                                 </group>
                             </group>
                             <group string="Preview" invisible="type == 'graph'">
@@ -54,26 +54,26 @@
                         <page string="Visual">
                             <group>
                                 <group string="Chart Settings" invisible="type != 'graph'">
-                                    <field name="graph_type" required="1" readonly="edit_mode == False" />
+                                    <field name="graph_type" required="1" />
                                     <label string="Group by field" for="group_by_id" />
-                                    <field name="group_by_id" readonly="edit_mode == False" />
+                                    <field name="group_by_id" />
                                 </group>
                                 <group string="Tile/KPI Settings" invisible="not (type in ['tile','kpi'])">
-                                    <field name="fa_icon" widget="icon_picker" placeholder="fa-chart-line" readonly="edit_mode == False" />
-                                    <field name="icon_size" readonly="edit_mode == False" />
-                                    <field name="show_trend" readonly="edit_mode == False" />
-                                    <field name="trend_period" invisible="show_trend == False" readonly="edit_mode == False" />
+                                    <field name="fa_icon" widget="icon_picker" placeholder="fa-chart-line" />
+                                    <field name="icon_size" />
+                                    <field name="show_trend" />
+                                    <field name="trend_period" invisible="show_trend == False" />
                                 </group>
                                 <group string="Table Settings" invisible="type != 'list'">
-                                    <field name="tag_fields_ids" widget="many2many_tags" readonly="edit_mode == False" />
-                                    <field name="table_limit" readonly="edit_mode == False" />
-                                    <field name="show_pagination" readonly="edit_mode == False" />
+                                    <field name="tag_fields_ids" widget="many2many_tags" />
+                                    <field name="table_limit" />
+                                    <field name="show_pagination" />
                                 </group>
                             </group>
                             <group string="Color Scheme">
-                                <field name="tile_color" widget="color" readonly="edit_mode == False" />
-                                <field name="text_color" widget="color" readonly="edit_mode == False" />
-                                <field name="fa_color" widget="color" readonly="edit_mode == False" />
+                                <field name="tile_color" widget="color" />
+                                <field name="text_color" widget="color" />
+                                <field name="fa_color" widget="color" />
                             </group>
                         </page>
                         <!-- Tab 3: KPI/Target Settings -->
@@ -81,12 +81,12 @@
                             <group>
                                 <group string="Values">
                                     <field name="record_value" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}" />
-                                    <field name="prev_value" readonly="edit_mode == False" />
-                                    <field name="target_value" readonly="edit_mode == False" />
+                                    <field name="prev_value" />
+                                    <field name="target_value" />
                                 </group>
                                 <group string="Trend Calculation">
-                                    <field name="show_trend" readonly="edit_mode == False" />
-                                    <field name="trend_period" invisible="show_trend == False" readonly="edit_mode == False" />
+                                    <field name="show_trend" />
+                                    <field name="trend_period" invisible="show_trend == False" />
                                 </group>
                             </group>
                         </page>
@@ -94,24 +94,23 @@
                         <page string="Layout">
                             <group>
                                 <group string="Grid Position">
-                                    <field name="sequence" readonly="edit_mode == False" />
-                                    <field name="data_x" readonly="edit_mode == False" />
-                                    <field name="data_y" readonly="edit_mode == False" />
-                                    <field name="grid_width" readonly="edit_mode == False" />
-                                    <field name="grid_height" readonly="edit_mode == False" />
+                                    <field name="sequence" />
+                                    <field name="data_x" />
+                                    <field name="data_y" />
+                                    <field name="grid_width" />
+                                    <field name="grid_height" />
                                 </group>
                                 <group string="Dimensions">
-                                    <field name="height" placeholder="300px" readonly="edit_mode == False" />
-                                    <field name="width" placeholder="100%" readonly="edit_mode == False" />
+                                    <field name="height" placeholder="300px" />
+                                    <field name="width" placeholder="100%" />
                                 </group>
                             </group>
                         </page>
                         <!-- Tab 5: Advanced -->
                         <page string="Advanced">
                             <group>
-                                <field name="is_public" readonly="edit_mode == False" />
+                                <field name="is_public" />
                                 <field name="client_action_id" invisible="1" />
-                                <field name="edit_mode" invisible="1" />
                                 <field name="last_update" readonly="1" />
                             </group>
                         </page>

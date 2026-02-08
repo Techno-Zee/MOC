@@ -63,7 +63,7 @@
                         </ul>
                     </div>
                 </div>
-                
+
                 <!-- Right Section: Filters -->
                 <div class="d-flex gap-2 align-items-center">
                     <div class="date-filter-container position-relative">
@@ -108,12 +108,30 @@
                 
                 
             </div>
-            
+
             <!-- Dashboard Content -->
             <div class="dashboard-content p-3">
-                <div t-ref="gridContainer" class="grid-stack"/>
+                <div t-ref="gridContainer" class="grid-stack">
+                    <t t-foreach="state.blocks" t-as="block" t-key="block.id">
+                        <div class="grid-stack-item"
+                            t-att-data-gs-id="block.id"
+                            t-att-data-gs-x="block.grid_position.x"
+                            t-att-data-gs-y="block.grid_position.y"
+                            t-att-data-gs-width="block.grid_position.w"
+                            t-att-data-gs-height="block.grid_position.h">
+
+                            <div class="grid-stack-item-content">
+                                <t t-component="resolveComponent(block.type)"
+                                t-props="{
+                                    block: block,
+                                    isEditable: state.isEditable
+                                }"/>
+                            </div>
+                        </div>
+                    </t>
+                </div>
             </div>
-            
+
             <!-- Loading Overlay -->
             <div t-if="state.loading" class="loading-overlay">
                 <div class="spinner-border text-primary" role="status">
