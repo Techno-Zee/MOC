@@ -28,7 +28,7 @@ export class ShellDashboard extends Component {
         this.notification = useService("notification");
 
         // Refs
-        this.gridContainer = useRef("gridContainer");
+        this.gridRef = useRef("gridContainer");
 
         // State
         this.state = useState({
@@ -57,15 +57,14 @@ export class ShellDashboard extends Component {
         // Initialize after mount
         onMounted(async () => {
             await this.initializeDashboard();
+            // this.bootstrap();
             this.setupEventListeners();
         });
 
         // Cleanup
         onWillUnmount(() => {
             this.clearIntervals();
-            if (this.grid) {
-                this.grid.destroy(false);
-            }
+            this.destroyGrid()
         });
     }
 
@@ -83,131 +82,120 @@ export class ShellDashboard extends Component {
 
     async initializeDashboard() {
         this.state.loading = true;
+
         try {
-            // Fetch blocks from backend
+            const actionId = this.props.action.id;
+
             const blocks = await this.orm.call(
                 "dashboard.block",
                 "get_dashboard_vals",
-                [this.props.actionId]
+                [actionId]
             );
 
             this.state.blocks = blocks;
+            this.state.ready = true;
 
-            // Initialize grid after a small delay to ensure DOM is ready
-            setTimeout(() => this.initializeGridStack(), 100);
+            // pastikan OWL sudah render DOM
+            requestAnimationFrame(() => this.initGrid());
 
         } catch (error) {
             console.error("Error initializing dashboard:", error);
-            this.notification.add("Failed to load dashboard", { type: "danger" });
+            this.notification.add(
+                "Failed to load dashboard",
+                { type: "danger" }
+            );
         } finally {
             this.state.loading = false;
         }
     }
 
-    initializeGridStack() {
-        if (!window.GridStack || !this.gridContainer.el) return;
+    initGrid() {
+        if (!this.gridRef.el) return;
 
-        // Destroy existing grid
-        if (this.grid) {
-            this.grid.destroy(false);
-        }
-
-        // Initialize GridStack
-        this.grid = GridStack.init({
-            float: true,
-            cellHeight: 100,
-            margin: 10,
-            resizable: {
-                handles: 'e, se, s, sw, w'
+        this.grid = GridStack.init(
+            {
+                float: true,
+                cellHeight: 100,
+                margin: 10,
+                disableOneColumnMode: true,
+                draggable: this.state.isEditable,
+                resizable: this.state.isEditable,
             },
-            draggable: {
-                handle: '.grid-stack-item-content'
-            },
-            animate: true,
-            disableOneColumnMode: true,
-            acceptWidgets: false
-        }, this.gridContainer.el);
+            this.gridRef.el
+        );
 
-        // Load saved positions
-        this.grid.load(this.state.blocks.map(block => ({
-            id: block.id.toString(),
-            x: block.grid_position.x,
-            y: block.grid_position.y,
-            w: block.grid_position.w,
-            h: block.grid_position.h,
-            content: this.getBlockContent(block)
-        })));
-
-        // Listen for grid changes
-        this.grid.on('change', (event, items) => {
-            if (this.state.editMode) {
-                this.saveLayout();
-            }
-        });
+        this.grid.on("change", (_, items) => this.onGridChange(items));
     }
 
-    getBlockContent(block) {
-        // This method creates the appropriate OWL component for each block type
-        let ComponentClass;
-        switch (block.type) {
-            case 'tile':
-                ComponentClass = DashboardTile;
-                break;
-            case 'graph':
-                ComponentClass = DashboardChart;
-                break;
-            case 'list':
-                ComponentClass = DashboardTable;
-                break;
-            case 'kpi':
-                ComponentClass = DashboardKPI;
-                break;
-            default:
-                console.warn(`Unknown block type: ${block.type}`);
-                return '<div class="alert alert-warning">Unknown block type</div>';
-        }
+    onGridChange(items) {
+        for (const item of items) {
+            const block = this.state.blocks.find(
+                b => String(b.id) === String(item.id)
+            );
+            if (!block) continue;
 
-        // Create a container for the component
-        const container = document.createElement('div');
-        
-        // Mount the OWL component
-        mount(ComponentClass, {
-            target: container,
-            env: this.env,
-            props: {
-                block: block,
-                isEditable: this.state.IsAdmin || this.state.IsManager,
-            },
-        });
-        
-        return container.innerHTML;
+            block.grid_position = {
+                x: item.x,
+                y: item.y,
+                w: item.w,
+                h: item.h,
+            };
+        }
+    }
+
+    resolveComponent(type) {
+        switch (type) {
+            case "tile": return DashboardTile;
+            case "graph": return DashboardChart;
+            case "list": return DashboardTable;
+            case "kpi": return DashboardKPI;
+            default: return null;
+        }
+    }
+
+    destroyGrid() {
+        if (this.grid) {
+            this.grid.destroy(false);
+            this.grid = null;
+        }
+    }
+
+    setEditMode(enabled) {
+        if (!this.grid) return;
+
+        this.grid.setStatic(!enabled);
+
+        this.notification.add(
+            enabled ? "Edit mode enabled. Drag and resize blocks."
+                : "Edit mode disabled. Layout locked.",
+            { type: "info" }
+        );
+
+        if (!enabled) {
+            this.saveLayout();
+        }
     }
 
     toggleEditMode() {
         this.state.editMode = !this.state.editMode;
-
-        if (this.state.editMode) {
-            this.grid.enableMove(true);
-            this.grid.enableResize(true);
-            this.notification.add("Edit mode enabled. Drag and resize blocks.", { type: "info" });
-        } else {
-            this.grid.enableMove(false);
-            this.grid.enableResize(false);
-            this.saveLayout();
-        }
+        this.setEditMode(this.state.editMode);
     }
 
     async saveLayout() {
         if (!this.grid) return;
 
-        const layout = this.grid.save();
-        const layoutData = layout.map(item => ({
-            id: parseInt(item.id),
-            x: item.x,
-            y: item.y,
-            w: item.w,
-            h: item.h
-        }));
+        const layout = this.grid.save(false);
+
+        const layoutData = layout
+            .filter(item => item.id !== null && item.id !== undefined)
+            .map(item => ({
+                id: Number(item.id),
+                x: item.x,
+                y: item.y,
+                w: item.w,
+                h: item.h,
+            }));
+
 
         try {
             await this.orm.call(
@@ -300,7 +288,7 @@ export class ShellDashboard extends Component {
             );
 
             this.state.blocks = blocks;
-            this.initializeGridStack();
+            this.initGrid();
             this.notification.add("Date filter applied", { type: "success" });
 
         } catch (error) {

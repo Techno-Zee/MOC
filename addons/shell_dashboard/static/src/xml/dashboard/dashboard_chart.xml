@@ -1,77 +1,82 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
     <t t-name="shell_dashboard.Chart" owl="1">
-        <div class="grid-stack-item" 
-             t-att-data-gs-x="props.block.grid_position.x"
-             t-att-data-gs-y="props.block.grid_position.y"
-             t-att-data-gs-width="props.block.grid_position.w"
-             t-att-data-gs-height="props.block.grid_position.h"
-             t-att-data-id="props.block.id">
-            <div class="grid-stack-item-content dashboard-chart shadow-sm border rounded">
-                <!-- Chart Header -->
-                <div class="chart-header d-flex justify-content-between align-items-center p-2 border-bottom">
-                    <h6 class="chart-title mb-0 fw-bold" t-esc="props.block.name"/>
-                    <div t-if="props.isEditable" class="chart-actions">
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
-                                    type="button" 
-                                    data-bs-toggle="dropdown">
-                                <i class="fa fa-ellipsis-h"/>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#" t-on-click.stop="configureBlock">
-                                    <i class="fa fa-cog me-2"/> Configure
-                                </a></li>
-                                <li><a class="dropdown-item" href="#" t-on-click.stop="exportChart('png')">
-                                    <i class="fa fa-image me-2"/> Export as PNG
-                                </a></li>
-                                <li><a class="dropdown-item" href="#" t-on-click.stop="exportChart('pdf')">
-                                    <i class="fa fa-file-pdf-o me-2"/> Export as PDF
-                                </a></li>
-                                <li><a class="dropdown-item" href="#" t-on-click.stop="exportChart('csv')">
-                                    <i class="fa fa-file-excel-o me-2"/> Export as CSV
-                                </a></li>
-                                <li><hr class="dropdown-divider"/></li>
-                                <li><a class="dropdown-item text-danger" href="#" t-on-click.stop="deleteBlock">
-                                    <i class="fa fa-trash me-2"/> Delete
-                                </a></li>
-                            </ul>
-                        </div>
+        <div class="grid-stack-item-content dashboard-chart shadow-sm border rounded">
+            <!-- Chart Header -->
+            <div class="chart-header d-flex justify-content-between align-items-center p-2 border-bottom">
+                <h6 t-esc="props.block.name" class="chart-title mb-0 fw-bold" />
+                <div t-if="props.isEditable" class="chart-actions">
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fa fa-ellipsis-h" />
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a t-on-click.stop="configureBlock" class="dropdown-item" href="#">
+                                    <i class="fa fa-cog me-2" />
+                                    Configure
+                                </a>
+                            </li>
+                            <li>
+                                <a t-on-click.stop="exportChart('png')" class="dropdown-item" href="#">
+                                    <i class="fa fa-image me-2" />
+                                    Export as PNG
+                                </a>
+                            </li>
+                            <li>
+                                <a t-on-click.stop="exportChart('pdf')" class="dropdown-item" href="#">
+                                    <i class="fa fa-file-pdf-o me-2" />
+                                    Export as PDF
+                                </a>
+                            </li>
+                            <li>
+                                <a t-on-click.stop="exportChart('csv')" class="dropdown-item" href="#">
+                                    <i class="fa fa-file-excel-o me-2" />
+                                    Export as CSV
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider" />
+                            </li>
+                            <li>
+                                <a t-on-click.stop="deleteBlock" class="dropdown-item text-danger" href="#">
+                                    <i class="fa fa-trash me-2" />
+                                    Delete
+                                </a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
-                
-                <!-- Chart Body -->
-                <div class="chart-body p-3">
-                    <div class="chart-container position-relative" style="height: 250px;">
-                        <canvas t-ref="chartCanvas"/>
-                    </div>
-                    
-                    <!-- Chart Legend -->
-                    <div t-if="props.block.data.labels  props.block.data.labels.length > 0" 
-                         class="chart-legend mt-2">
-                        <div class="legend-items d-flex flex-wrap gap-2 justify-content-center">
-                            <t t-foreach="props.block.data.labels" t-as="label" t-key="label_index">
-                                <div class="legend-item d-flex align-items-center">
-                                    <span class="legend-color me-1" 
-                                          t-att-style="'background-color: ' + getChartColor(label_index)"/>
-                                    <span class="legend-label small" t-esc="label"/>
-                                </div>
-                            </t>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Chart Footer -->
-                <div class="chart-footer px-3 pb-2 border-top">
-                    <div class="d-flex justify-content-between small text-muted">
-                        <span>Last updated: <t t-esc="formatDate(props.block.last_update)"/></span>
-                        <span>Double-click to view records</span>
-                    </div>
-                </div>
-                
-                <!-- Double-click overlay -->
-                <div class="chart-overlay" t-on-dblclick.stop="openRecords"/>
             </div>
+            <!-- Chart Body -->
+            <div class="chart-body p-3">
+                <div class="chart-container position-relative" style="height: 250px;">
+                    <canvas t-ref="chartCanvas" />
+                </div>
+                <!-- Chart Legend -->
+                <div t-if="props.block.data.labels  props.block.data.labels.length > 0" class="chart-legend mt-2">
+                    <div class="legend-items d-flex flex-wrap gap-2 justify-content-center">
+                        <t t-foreach="props.block.data.labels" t-as="label" t-key="label_index">
+                            <div class="legend-item d-flex align-items-center">
+                                <span t-att-style="'background-color: ' + getChartColor(label_index)" class="legend-color me-1" />
+                                <span t-esc="label" class="legend-label small" />
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+            <!-- Chart Footer -->
+            <div class="chart-footer px-3 pb-2 border-top">
+                <div class="d-flex justify-content-between small text-muted">
+                    <span>
+                        Last updated:
+                        <t t-esc="formatDate(props.block.last_update)" />
+                    </span>
+                    <span>Double-click to view records</span>
+                </div>
+            </div>
+            <!-- Double-click overlay -->
+            <div t-on-dblclick.stop="openRecords" class="chart-overlay" />
         </div>
     </t>
 </templates>
