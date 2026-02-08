@@ -1,7 +1,6 @@
 /** @odoo-module **/
 import { Component } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
-import { DashboardTile } from '@shell_dashboard/js/dashboard/dynamic_dashboard_tile';
 
 export class DashboardTile extends Component {
     static template = "shell_dashboard.Tile";
@@ -82,5 +81,3 @@ export class DashboardTile extends Component {
         }
     }
 }
-
-registry.category("actions").add("shell_dashboard.action", DashboardTile);

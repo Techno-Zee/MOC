@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<template name="shell_dashboard.Tile" xml:space="preserve">
+<templates xml:space="preserve">
     <t t-name="shell_dashboard.Tile" owl="1">
-        <div class="grid-stack-item" 
+        <div class="grid-stack-item"
              t-att-data-gs-x="props.block.grid_position.x"
              t-att-data-gs-y="props.block.grid_position.y"
              t-att-data-gs-width="props.block.grid_position.w"
@@ -71,4 +71,4 @@
             </div>
         </div>
     </t>
-</template>
+</templates>

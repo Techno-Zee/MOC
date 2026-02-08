@@ -47,13 +47,9 @@ yang dibangun dengan jQuery untuk kebutuhan visualisasi data di backend Odoo.
             'shell_dashboard/static/lib/gridstack/dist/gridstack.min.css',
             
             'shell_dashboard/static/src/js/**/*.js',
-            'shell_dashboard/static/src/scss/**/*.scss',
             'shell_dashboard/static/src/xml/**/*.xml',
+            'shell_dashboard/static/src/scss/**/*.scss',
         ],
-        # Aktifkan hanya jika memang ada UI frontend
-        # 'web.assets_frontend': [
-        #     'shell_dashboard/static/src/js/frontend/**/*.js',
-        # ],
     },
 
     'installable': True,
