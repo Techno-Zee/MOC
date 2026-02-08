@@ -183,11 +183,6 @@ class DashboardBlock(models.Model):
         default=lambda self: self._get_default_action(),
         help="Client Action"
     )
-    edit_mode = fields.Boolean(
-        string="Edit Mode", 
-        default=True, 
-        help="Enable to edit chart and tile"
-    )
     last_update = fields.Datetime(
         string="Last Updated", 
         compute='_compute_last_update', 
@@ -584,6 +579,7 @@ class DashboardBlock(models.Model):
                 'formatted_value': "0",
                 'error': str(e)
             }
+            
     @api.model
     def get_save_layout(self, grid_data_list):
         """Save edited layout values"""
