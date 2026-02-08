@@ -225,5 +225,3 @@ export class DashboardChart extends Component {
         }
     }
 }
-
-registry.category("actions").add("shell_dashboard.action", DashboardChart);

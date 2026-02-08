@@ -63,5 +63,3 @@ export class DashboardTable extends Component {
         }
     }
 }
-
-registry.category("actions").add("shell_dashboard.action", DashboardTable);

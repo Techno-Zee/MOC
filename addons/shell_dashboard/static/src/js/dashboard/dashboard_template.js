@@ -11,6 +11,12 @@ import { mount } from "@odoo/owl";
 
 export class ShellDashboard extends Component {
     static template = "shell_dashboard.Dashboard";
+    static components = {
+        DashboardTile,
+        DashboardChart,
+        DashboardTable,
+        DashboardKPI,
+    };
 
     setup() {
         super.setup();
@@ -163,7 +169,7 @@ export class ShellDashboard extends Component {
 
         // Create a container for the component
         const container = document.createElement('div');
-
+        
         // Mount the OWL component
         mount(ComponentClass, {
             target: container,
@@ -173,7 +179,7 @@ export class ShellDashboard extends Component {
                 isEditable: this.state.IsAdmin || this.state.IsManager,
             },
         });
-
+        
         return container.innerHTML;
     }
 
