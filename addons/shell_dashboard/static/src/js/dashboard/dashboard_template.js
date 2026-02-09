@@ -115,7 +115,7 @@ export class ShellDashboard extends Component {
         this.grid = GridStack.init(
             {
                 float: true,
-                cellHeight: 100,
+                cellHeight: 80,
                 margin: 10,
                 disableOneColumnMode: true,
                 draggable: this.state.isEditable,

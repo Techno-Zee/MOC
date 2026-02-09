@@ -113,17 +113,17 @@ class DashboardBlock(models.Model):
     # Colors
     tile_color = fields.Char(
         string="Background Color", 
-        default="#1f6abb", 
+        default="#ffffff", 
         help='Primary Color of Tile/Chart'
     )
     text_color = fields.Char(
         string="Text Color", 
-        default="#FFFFFF", 
+        default="#171717", 
         help='Text Color'
     )
     fa_color = fields.Char(
         string="Icon Color", 
-        default="#FFFFFF", 
+        default="#000000", 
         help='Icon Color'
     )
     
@@ -384,9 +384,9 @@ class DashboardBlock(models.Model):
         """Get block configuration"""
         config = {
             'colors': {
-                'background': rec.tile_color or '#1f6abb',
-                'text': rec.text_color or '#FFFFFF',
-                'icon': rec.fa_color or '#FFFFFF'
+                'background': rec.tile_color or "#ffffff",
+                'text': rec.text_color or "#171717",
+                'icon': rec.fa_color or "#000000"
             },
             'layout': {
                 'height': rec.height or '300px',
