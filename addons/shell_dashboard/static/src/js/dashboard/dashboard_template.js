@@ -117,9 +117,12 @@ export class ShellDashboard extends Component {
                 float: true,
                 cellHeight: 80,
                 margin: 10,
-                disableOneColumnMode: true,
-                draggable: this.state.isEditable,
-                resizable: this.state.isEditable,
+                // disableOneColumnMode: true,
+                // draggable: this.state.isEditable,
+                // resizable: this.state.isEditable,
+                resizable: {
+                    handles: 'e, se, s, sw, w'
+                }
             },
             this.gridRef.el
         );
@@ -140,6 +143,8 @@ export class ShellDashboard extends Component {
                 w: item.w,
                 h: item.h,
             };
+
+            console.log(block);
         }
     }
 
@@ -163,7 +168,7 @@ export class ShellDashboard extends Component {
     setEditMode(enabled) {
         if (!this.grid) return;
 
-        this.grid.setStatic(!enabled);
+        // this.grid.setStatic(!enabled);
 
         this.notification.add(
             enabled ? "Edit mode enabled. Drag and resize blocks."

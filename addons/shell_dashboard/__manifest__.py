@@ -43,8 +43,10 @@ yang dibangun dengan jQuery untuk kebutuhan visualisasi data di backend Odoo.
             # Libraries 
             'shell_dashboard/static/lib/chartjs/chart.umd.min.js',
             'shell_dashboard/static/lib/html2pdf/html2pdf.bundle.min.js',
-            'shell_dashboard/static/lib/gridstack/dist/gridstack-all.js',
-            'shell_dashboard/static/lib/gridstack/dist/gridstack.min.css',
+            
+            # Online Linbaries
+            'https://cdn.jsdelivr.net/npm/gridstack@10.1.2/dist/gridstack.min.css',
+            'https://cdn.jsdelivr.net/npm/gridstack@10.1.2/dist/gridstack-all.js',
             
             'shell_dashboard/static/src/js/**/*.js',
             'shell_dashboard/static/src/xml/**/*.xml',
