@@ -12,13 +12,13 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a t-on-click.stop="configureBlock" class="dropdown-item" href="#">
+                                <a t-on-click="configureBlock" class="dropdown-item" href="#">
                                     <i class="fa fa-cog me-2" />
                                     Configure
                                 </a>
                             </li>
                             <li>
-                                <a t-on-click.stop="exportChart('png')" class="dropdown-item" href="#">
+                                <a t-on-click="exportChart('png')" class="dropdown-item" href="#">
                                     <i class="fa fa-image me-2" />
                                     Export as PNG
                                 </a>
