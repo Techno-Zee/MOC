@@ -57,6 +57,9 @@
 
 // Tile Styles
 .dashboard-tile {
+    height: 100%;
+    position: relative;
+    
     .tile-header {
         background: #f8f9fa;
         
@@ -69,13 +72,13 @@
         .tile-actions{
             position: absolute;
             right: 10px;
-            top: 10px;
+            top: 3px;
             z-index: 2;
         }
     }
     
     .tile-body {
-        min-height: 120px;
+        height: 100%;
         
         .tile-value {
             font-weight: 700;
@@ -84,6 +87,7 @@
         .tile-icon {
             .icon-container {
                 transition: transform 0.3s ease;
+                background-color: rgba(139, 139, 140, 0.17);
                 
                 &:hover {
                     transform: scale(1.1);
@@ -255,10 +259,6 @@
                 }
             }
         }
-    }
-    
-    .grid-stack-item {
-        min-width: 100% !important;
     }
 }
 

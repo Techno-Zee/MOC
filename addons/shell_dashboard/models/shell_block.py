@@ -128,8 +128,8 @@ class DashboardBlock(models.Model):
     )
     
     # ==== LAYOUT AND POSITION ====
-    height = fields.Char(string="Height", default="300px", help="Height of the block")
-    width = fields.Char(string="Width", default="100%", help="Width of the block")
+    height = fields.Char(string="Height", default="180px", help="Height of the block")
+    width = fields.Char(string="Width", default="300px", help="Width of the block")
     translate_x = fields.Char(string="Position X", help="X position for grid layout")
     translate_y = fields.Char(string="Position Y", help="Y position for grid layout")
     data_x = fields.Integer(string="Grid X", default=0, help="Grid X coordinate")
@@ -601,10 +601,10 @@ class DashboardBlock(models.Model):
                     'grid_height': int(data['h'])
                 })
             
-            if 'height' in data and 'width' in data:
+            if 'height' in data:
                 updates.update({
-                    'height': f"{data['height']}px",
-                    'width': f"{data['width']}px"
+                    'height': f"{data['height']}px"
+                    # 'width': f"{data['width']}px"
                 })
             
             if updates:
