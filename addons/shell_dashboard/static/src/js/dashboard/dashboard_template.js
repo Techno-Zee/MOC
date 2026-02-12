@@ -57,7 +57,6 @@ export class ShellDashboard extends Component {
         // Initialize after mount
         onMounted(async () => {
             await this.initializeDashboard();
-            // this.bootstrap();
             this.setupEventListeners();
         });
 
@@ -110,24 +109,30 @@ export class ShellDashboard extends Component {
     }
 
     initGrid() {
-        if (!this.gridRef.el) return;
+        if (!this.gridRef.el) {
+            console.error('Grid container not found');
+            return;
+        }
 
-        this.grid = GridStack.init(
-            {
-                float: true,
-                cellHeight: 80,
-                margin: 10,
-                // disableOneColumnMode: true,
-                // draggable: this.state.isEditable,
-                // resizable: this.state.isEditable,
-                resizable: {
-                    handles: 'e, se, s, sw, w'
-                }
-            },
-            this.gridRef.el
-        );
+        console.log("Container width:", this.gridRef.el.clientWidth);
+        console.log("Container height:", this.gridRef.el.clientHeight);
 
-        this.grid.on("change", (_, items) => this.onGridChange(items));
+
+        this.grid = GridStack.init({
+            staticGrid: true,
+            cellHeight: 80,
+            margin: 10,
+            float: true,
+            disableOneColumnMode: true,
+        }, this.gridRef.el);
+
+        // PAKSA ENGINE HITUNG ULANG
+        requestAnimationFrame(() => {
+            // this.grid.engine.cleanupNodes();
+            this.grid.commit();
+            // this.grid.resize();   // <- ini penting
+        });
+
     }
 
     onGridChange(items) {
@@ -135,6 +140,7 @@ export class ShellDashboard extends Component {
             const block = this.state.blocks.find(
                 b => String(b.id) === String(item.id)
             );
+            console.log("Block ", block);
             if (!block) continue;
 
             block.grid_position = {
@@ -144,7 +150,6 @@ export class ShellDashboard extends Component {
                 h: item.h,
             };
 
-            console.log(block);
         }
     }
 
@@ -168,17 +173,42 @@ export class ShellDashboard extends Component {
     setEditMode(enabled) {
         if (!this.grid) return;
 
-        // this.grid.setStatic(!enabled);
+        // Simpan layout saat ini
+        const currentLayout = this.grid.save(false);
 
-        this.notification.add(
-            enabled ? "Edit mode enabled. Drag and resize blocks."
-                : "Edit mode disabled. Layout locked.",
-            { type: "info" }
-        );
+        // Hancurkan grid lama
+        this.destroyGrid();
 
-        if (!enabled) {
-            this.saveLayout();
-        }
+        // Tunggu sejenak
+        setTimeout(() => {
+            // Inisialisasi grid baru dengan mode yang diinginkan
+            this.grid = GridStack.init({
+                staticGrid: !enabled, // true = locked, false = editable
+                cellHeight: 80,
+                margin: 10,
+                float: enabled, // biarkan item float saat edit mode
+                resizable: {
+                    handles: enabled ? 'e, se, s, sw, w' : false
+                },
+                draggable: {
+                    handle: enabled ? '.grid-stack-item-content' : false
+                }
+            }, this.gridRef.el);
+
+            // Load layout yang disimpan
+            if (currentLayout && currentLayout.length > 0) {
+                this.grid.load(currentLayout);
+            }
+
+            // Re-attach event handler
+            this.grid.on("change", (_, items) => this.onGridChange(items));
+
+            console.log(`Grid reinitialized in ${enabled ? 'edit' : 'view'} mode`);
+
+            if (!enabled) {
+                this.saveLayout();
+            }
+        }, 50);
     }
 
     toggleEditMode() {
@@ -199,7 +229,10 @@ export class ShellDashboard extends Component {
                 y: item.y,
                 w: item.w,
                 h: item.h,
+                height: (item.h * 80 + 10),
             }));
+
+        console.log("TGID :", this.grid);
 
 
         try {
@@ -293,6 +326,8 @@ export class ShellDashboard extends Component {
             );
 
             this.state.blocks = blocks;
+            console.log(this.state.blocks);
+
             this.initGrid();
             this.notification.add("Date filter applied", { type: "success" });
 
