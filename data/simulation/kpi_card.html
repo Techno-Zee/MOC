@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+.kpi-card {
+    border-radius: 1rem;
+    padding: 1.5rem;
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.kpi-value {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.kpi-unit {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+
+/* Circular Progress */
+.progress-ring {
+    width: 110px;
+    height: 110px;
+    position: relative;
+}
+
+.progress-ring svg {
+    transform: rotate(-90deg);
+}
+
+.progress-ring circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+}
+
+.progress-bg {
+    stroke: #e9ecef;
+}
+
+.progress-bar {
+    stroke: #0d6efd;
+    transition: stroke-dashoffset 0.6s ease;
+}
+
+.progress-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.kpi-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.kpi-percent {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+</style>
+</head>
+
+<body class="bg-light p-5">
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+
+            <div class="kpi-card d-flex justify-content-between align-items-center">
+
+                <!-- LEFT -->
+                <div>
+                    <div class="kpi-value">125</div>
+                    <div class="kpi-unit">Users</div>
+                </div>
+
+                <!-- RIGHT -->
+                <div class="progress-ring" data-progress="72">
+                    <svg width="110" height="110">
+                        <!-- radius = 45 -->
+                        <circle class="progress-bg" cx="55" cy="55" r="45"/>
+                        <circle class="progress-bar" cx="55" cy="55" r="45"/>
+                    </svg>
+
+                    <div class="progress-content">
+                        <i class="bi bi-graph-up-arrow kpi-icon text-primary"></i>
+                        <div class="kpi-percent text-success">72%</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.progress-ring').forEach(ring => {
+    const percent = ring.dataset.progress;
+    const circle = ring.querySelector('.progress-bar');
+    const radius = circle.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+
+    circle.style.strokeDasharray = circumference;
+    circle.style.strokeDashoffset = circumference;
+
+    const offset = circumference - (percent / 100) * circumference;
+    circle.style.strokeDashoffset = offset;
+});
+</script>
+
+</body>
+</html>

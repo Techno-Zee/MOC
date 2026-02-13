@@ -1,18 +1,45 @@
 /** @odoo-module **/
-import { Component } from "@odoo/owl";
+import { useRef, Component, onMounted, onPatched } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
+import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 
 export class DashboardKPI extends Component {
     static template = "shell_dashboard.KPI";
-    
+
     setup() {
         super.setup();
         this.action = useService("action");
         this.dialog = useService("dialog");
         this.notification = useService("notification");
         this.orm = useService("orm");
+
+        this.rootRef = useRef("root");
+        this.ringRef = useRef("ring");
+
+
+        onMounted(() => this.initProgress());
+        onPatched(() => this.initProgress());
+
     }
-    
+
+    initProgress() {
+        const ring = this.ringRef.el;
+        if (!ring) return;
+
+        const percent = parseFloat(ring.dataset.progress || 0);
+        const circle = ring.querySelector('.progress-bar');
+        if (!circle) return;
+
+        const radius = circle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+
+        circle.style.strokeDasharray = circumference;
+        circle.style.strokeDashoffset = circumference;
+
+        const offset = circumference - (percent / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+    }
+
     getTrendClass(trendDirection) {
         switch (trendDirection) {
             case 'up': return 'bg-success';
@@ -20,7 +47,7 @@ export class DashboardKPI extends Component {
             default: return 'bg-secondary';
         }
     }
-    
+
     getTrendIcon(trendDirection) {
         switch (trendDirection) {
             case 'up': return 'fa fa-arrow-up me-1';
@@ -28,7 +55,7 @@ export class DashboardKPI extends Component {
             default: return 'fa fa-minus me-1';
         }
     }
-    
+
     async configureBlock() {
         try {
             await this.action.doAction({
@@ -44,13 +71,13 @@ export class DashboardKPI extends Component {
             this.notification.add("Failed to configure block", { type: "danger" });
         }
     }
-    
+
     async deleteBlock() {
         try {
             const confirmed = await this.dialog.confirm("Are you sure you want to delete this KPI?", {
                 title: "Confirm Deletion"
             });
-            
+
             if (confirmed) {
                 await this.orm.unlink("dashboard.block", [this.props.block.id]);
                 this.notification.add("KPI deleted successfully", { type: "success" });
@@ -61,10 +88,10 @@ export class DashboardKPI extends Component {
             this.notification.add("Failed to delete KPI", { type: "danger" });
         }
     }
-    
+
     async openRecords() {
         if (!this.props.block.model_name) return;
-        
+
         try {
             await this.action.doAction({
                 type: 'ir.actions.act_window',

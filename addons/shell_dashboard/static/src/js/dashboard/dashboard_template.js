@@ -135,7 +135,7 @@ export class ShellDashboard extends Component {
         // Load dari server state
         this.loadLayout();
 
-        // this.grid.on("change", (_, items) => this.onGridChange(items));
+        this.grid.on("change", (_, items) => this.onGridChange(items));
     }
 
     loadLayout() {
@@ -190,11 +190,12 @@ export class ShellDashboard extends Component {
     setEditMode(enabled) {
         if (!this.grid) return;
 
-        this.initGrid();
-
+        
         if (!enabled) {
             this.saveLayout();
         }
+
+        this.initGrid();
 
         console.log(`Switched to ${enabled ? 'edit' : 'view'} mode`);
     }

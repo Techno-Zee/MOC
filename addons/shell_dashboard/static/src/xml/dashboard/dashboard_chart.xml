@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
     <t t-name="shell_dashboard.Chart" owl="1">
-        <div class="dashboard-chart shadow-sm border rounded">
+        <div class="dashboard-chart">
             <!-- Chart Header -->
             <div class="chart-header d-flex justify-content-between align-items-center p-2 border-bottom">
                 <h6 t-esc="props.block.name" class="chart-title mb-0 fw-bold" />
