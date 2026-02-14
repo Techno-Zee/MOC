@@ -91,13 +91,17 @@ export class ShellDashboard extends Component {
                 [actionId]
             );
 
-            console.log("blocks :", blocks);
+            blocks.forEach(block => {
+                if (!block.grid_position) {
+                    block.grid_position = { x: 0, y: 0, w: 3, h: 2 };
+                }
+            });
             this.state.blocks = blocks;
 
             this.state.ready = true;
 
             // pastikan OWL sudah render DOM
-            requestAnimationFrame(() => this.initGrid());
+            setTimeout(() => this.initGrid(), 50);
 
         } catch (error) {
             console.error("Error initializing dashboard:", error);
@@ -113,11 +117,9 @@ export class ShellDashboard extends Component {
     initGrid() {
         if (!this.gridRef.el) return;
 
-        // Destroy kalau sudah ada
         this.destroyGrid();
 
-        // Inisialisasi grid
-        let enabled = this.state.editMode;
+        const enabled = this.state.editMode;
 
         this.grid = GridStack.init({
             staticGrid: !enabled,
@@ -125,17 +127,22 @@ export class ShellDashboard extends Component {
             margin: 10,
             float: enabled,
             resizable: {
-                handles: enabled ? 'e, se, s, sw, w' : false
+                enabled: enabled,
+                handles: enabled ? 'e, se, s, sw, w' : ''
             },
             draggable: {
-                handle: enabled ? '.grid-stack-item-content' : false
+                enabled: enabled,
+                handle: enabled ? '.grid-stack-item-content' : ''
             }
         }, this.gridRef.el);
 
-        // Load dari server state
-        this.loadLayout();
+        // Paksa grid untuk memproses ulang layout
+        if (this.grid) {
+            this.grid.batchUpdate();
+            this.grid.commit();
+        }
 
-        this.grid.on("change", (_, items) => this.onGridChange(items));
+        this.grid.on("change", (_, nodes) => this.onGridChange(nodes));
     }
 
     loadLayout() {
@@ -151,21 +158,18 @@ export class ShellDashboard extends Component {
         this.grid.load(layout);
     }
 
-
-    onGridChange(items) {
-        for (const item of items) {
+    onGridChange(nodes) {
+        for (const node of nodes) {
             const block = this.state.blocks.find(
-                b => String(b.id) === String(item.id)
+                b => String(b.id) === String(node.id)
             );
             if (!block) continue;
-
             block.grid_position = {
-                x: item.x,
-                y: item.y,
-                w: item.w,
-                h: item.h,
+                x: node.x,
+                y: node.y,
+                w: node.w,
+                h: node.h,
             };
-
         }
     }
 
@@ -190,7 +194,7 @@ export class ShellDashboard extends Component {
     setEditMode(enabled) {
         if (!this.grid) return;
 
-        
+
         if (!enabled) {
             this.saveLayout();
         }
@@ -211,7 +215,7 @@ export class ShellDashboard extends Component {
     async saveLayout() {
         if (!this.grid) return;
 
-        const layout = this.grid.save(false);
+        const layout = this.grid.save();
 
         const layoutData = layout
             .filter(item => item.id !== null && item.id !== undefined)

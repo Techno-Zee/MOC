@@ -97,12 +97,12 @@
                     
                     <button t-on-click="toggleAutoRefresh" class="btn" 
                             t-att-class="state.autoRefresh ? 'btn-warning' : 'btn-outline-secondary'">
-                        <i class="fa" t-att-class="state.autoRefresh ? 'fa-pause' : 'fa-refresh'"/>
+                        <i class="fa" t-att-class="state.autoRefresh ? 'fa-pause' : 'fa-load'"/>
                         <span t-if="state.autoRefresh" t-esc="' ' + state.refreshCountdown + 's'"/>
                     </button>
                     
                     <button t-on-click="refreshDashboard" class="btn btn-outline-secondary">
-                        <i class="fa fa-sync"/>
+                        <i class="fa fa-refresh"/>
                     </button>
                 </div>
                 
