@@ -470,71 +470,55 @@ class DashboardBlock(models.Model):
             _logger.error("Error fetching list data: %s", e)
             return {'error': f"Data fetch error: {str(e)}"}
     
-    def _get_chart_data(self, rec, model, domain):
-        """Get chart data"""
+    def _get_chart_data(self, rec, model, domain, start_date=None, end_date=None):
+        """Get chart data using direct SQL query (model lama style)"""
         if not rec.group_by_id:
             return {'error': 'No group by field selected for chart'}
-            
-        group_field = rec.group_by_id.name
-        measure_field = rec.measured_field_id.name if rec.measured_field_id else None
-        
+
         try:
-            if measure_field:
-                aggregate_field = f'{rec.operation}:{measure_field}'
-                results = model.read_group(
-                    domain=domain,
-                    fields=[aggregate_field, group_field],
-                    groupby=[group_field],
-                    lazy=False,
-                    orderby=f'{group_field} asc'
-                )
-                
-                labels = []
-                values = []
-                for res in results:
-                    # Handle field display values
-                    label = res[group_field]
-                    if isinstance(label, tuple):
-                        label = label[1]  # Get display name
-                    elif label is False:
-                        label = 'Undefined'
-                    
-                    labels.append(label)
-                    values.append(res.get(f'{rec.operation}_{measure_field}', 0))
-            else:
-                # Count by group
-                results = model.read_group(
-                    domain=domain,
-                    fields=['id'],
-                    groupby=[group_field],
-                    lazy=False,
-                    orderby=f'{group_field} asc'
-                )
-                
-                labels = []
-                values = []
-                for res in results:
-                    label = res[group_field]
-                    if isinstance(label, tuple):
-                        label = label[1]
-                    elif label is False:
-                        label = 'Undefined'
-                    
-                    labels.append(label)
-                    values.append(res.get('__count', 0))
-            
+            # Gunakan method get_query yang sudah ditambahkan ke model
+            query = model.get_query(
+                args=domain,
+                operation=rec.operation,
+                field=rec.measured_field_id,
+                start_date=start_date,
+                end_date=end_date,
+                group_by=rec.group_by_id,
+                apply_ir_rules=True
+            )
+
+            self._cr.execute(query)
+            records = self._cr.dictfetchall()
+
+            group_field = rec.group_by_id.name
+            x_axis = []
+            y_axis = []
+
+            for record in records:
+                # Nilai sumbu X (group by)
+                x_val = record.get(group_field)
+                if isinstance(x_val, dict) and 'name' in x_val:
+                    x_val = x_val.get('name')  # Untuk field many2one
+                elif x_val is False:
+                    x_val = 'Undefined'
+                x_axis.append(x_val)
+
+                # Nilai sumbu Y (hasil agregasi)
+                y_axis.append(record.get('value', 0))
+
             return {
-                'labels': labels,
+                'labels': x_axis,
                 'datasets': [{
                     'label': rec.name,
-                    'data': values,
-                    'backgroundColor': self._generate_colors(len(values))
+                    'data': y_axis,
+                    'backgroundColor': self._generate_colors(len(y_axis))
                 }]
             }
+
         except Exception as e:
-            _logger.error("Error fetching chart data: %s", e)
-            return {'error': f"Chart data error: {str(e)}"}
-    
+            _logger.error("Error in _get_chart_data: %s", e)
+            return {'error': str(e)}
+        
     def _get_tile_data(self, rec, model, domain):
         """Get tile/KPI data"""
         try:
