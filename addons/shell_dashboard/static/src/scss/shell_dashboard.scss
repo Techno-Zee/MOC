@@ -26,6 +26,7 @@
 
       .grid-stack-item {
         transition: all 0.3s ease;
+        margin: 10px 0;
 
         .grid-stack-item-content {
           background: white;
@@ -57,8 +58,6 @@
 
 // Tile Styles
 .dashboard-tile {
-  position: relative;
-
   .tile-header {
     background: #f8f9fa;
 
@@ -78,6 +77,7 @@
 
   .tile-body {
     height: 100%;
+    position: relative;
 
     .tile-value {
       font-weight: 700;
@@ -103,6 +103,7 @@
   }
 
   .chart-body {
+    position: relative;
     .chart-container {
       canvas {
         max-width: 100%;
@@ -126,20 +127,23 @@
   }
 }
 
-.chart-overlay, .tile-overlay, .table-overlay, .kpi-overlay {
-    position: absolute;
-    top: 45px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    cursor: pointer;
-    opacity: 0;
+.chart-overlay,
+.tile-overlay,
+.table-overlay,
+.kpi-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  cursor: pointer;
+  opacity: 0;
 
-    &:hover {
-      background: rgba(0, 0, 0, 0.05);
-      opacity: 1;
-    }
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    opacity: 1;
   }
+}
 // Table Styles
 .dashboard-table {
   .table-header {
@@ -185,59 +189,61 @@
 // KPI Styles
 .dashboard-kpi {
   height: 100%;
-
-  .kpi-value {
-    font-size: 3rem;
-    font-weight: 700;
-    line-height: 1;
-  }
-
-  .kpi-unit {
-    color: #6c757d;
-  }
-
-  .progress-ring {
-    width: 92px; // Anda bebas ubah ini
-    aspect-ratio: 1;
+  .kpi-body {
     position: relative;
-
-    svg {
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg);
+    .kpi-value {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1;
     }
 
-    circle {
-      fill: none;
-      stroke-width: 8;
-      stroke-linecap: round;
+    .kpi-unit {
+      color: #6c757d;
     }
 
-    .progress-bg {
-      stroke: #e9ecef;
+    .progress-ring {
+      width: 92px; // Anda bebas ubah ini
+      aspect-ratio: 1;
+      position: relative;
+
+      svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+      }
+
+      circle {
+        fill: none;
+        stroke-width: 8;
+        stroke-linecap: round;
+      }
+
+      .progress-bg {
+        stroke: #e9ecef;
+      }
+
+      .progress-bar {
+        transition: stroke-dashoffset 0.6s ease;
+        stroke: #71639e;
+      }
     }
 
-    .progress-bar {
-      transition: stroke-dashoffset 0.6s ease;
-      stroke: #71639e;
+    .progress-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
     }
-  }
 
-  .progress-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-  }
+    .kpi-icon {
+      font-size: 2rem;
+    }
 
-  .kpi-icon {
-    font-size: 2rem;
-  }
-
-  .kpi-percent {
-    font-size: 0.8rem;
-    font-weight: 600;
+    .kpi-percent {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
   }
 }
 
@@ -275,4 +281,5 @@
 
 .grid-stack-item {
   animation: fadeIn 0.3s ease;
+  margin: 10px 0;
 }

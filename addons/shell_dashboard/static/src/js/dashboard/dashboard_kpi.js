@@ -96,7 +96,7 @@ export class DashboardKPI extends Component {
             await this.action.doAction({
                 type: 'ir.actions.act_window',
                 res_model: this.props.block.model_name,
-                view_mode: 'list,form',
+                view_mode: 'list',
                 views: [[false, 'list'], [false, 'form']],
                 domain: this.props.block.domain || [],
                 context: {}

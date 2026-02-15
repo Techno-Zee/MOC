@@ -343,7 +343,8 @@ class DashboardBlock(models.Model):
             [
                 ('client_action_id', '=', int(action_id)), 
                 ('active', '=', True)
-            ]
+            ],
+            order='data_y, data_x'
         )
         
         for rec in blocks:

@@ -27,7 +27,7 @@
                         </thead>
                         <tbody>
                             <t t-foreach="props.block.data.rows" t-as="row" t-key="row_index">
-                                <tr t-on-click="() => openRecord(row)">
+                                <tr t-on-click="(ev) => openRecord(row)">
                                     <t t-foreach="row" t-as="cell" t-key="cell_index">
                                         <td t-esc="cell" class="text-nowrap" />
                                     </t>

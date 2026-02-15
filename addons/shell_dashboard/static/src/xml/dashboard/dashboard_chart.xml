@@ -64,6 +64,8 @@
                         </t>
                     </div>
                 </div>
+                <!-- Double-click overlay -->
+                <div t-on-click="openRecords" class="chart-overlay" />
             </div>
             <!-- Chart Footer -->
             <div class="chart-footer px-3 pb-2 border-top">
@@ -75,8 +77,6 @@
                     <span>Double-click to view records</span>
                 </div>
             </div>
-            <!-- Double-click overlay -->
-            <div t-on-click="openRecords" class="chart-overlay" />
         </div>
     </t>
 </templates>
