@@ -89,7 +89,7 @@ export class DashboardChart extends Component {
                         }
                     }
                 },
-                scales: block.type !== 'pie' && block.type !== 'donut' ? {
+                scales: block.type !== 'pie' && block.type !== 'doughnut' ? {
                     y: {
                         beginAtZero: true,
                         ticks: {

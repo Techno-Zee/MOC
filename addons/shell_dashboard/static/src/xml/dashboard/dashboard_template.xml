@@ -26,7 +26,7 @@
                             <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'pie')">
                                 <i class="fa fa-pie-chart me-2"/> Pie Chart
                             </a></li>
-                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'donut')">
+                            <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'doughnut')">
                                 <i class="fa fa-circle me-2"/> Donut Chart
                             </a></li>
                             <li><a class="dropdown-item" href="#" t-on-click.prevent="() => onClickAddItem('graph', 'radar')">
@@ -97,7 +97,7 @@
                     
                     <button t-on-click="toggleAutoRefresh" class="btn" 
                             t-att-class="state.autoRefresh ? 'btn-warning' : 'btn-outline-secondary'">
-                        <i class="fa" t-att-class="state.autoRefresh ? 'fa-pause' : 'fa-load'"/>
+                        <i class="fa" t-att-class="state.autoRefresh ? 'fa-pause' : 'fa-play-circle'"/>
                         <span t-if="state.autoRefresh" t-esc="' ' + state.refreshCountdown + 's'"/>
                     </button>
                     

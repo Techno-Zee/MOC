@@ -43,6 +43,7 @@ yang dibangun dengan jQuery untuk kebutuhan visualisasi data di backend Odoo.
             # Libraries 
             'shell_dashboard/static/lib/chartjs/chart.umd.min.js',
             'shell_dashboard/static/lib/html2pdf/html2pdf.bundle.min.js',
+            'shell_dashboard/static/src/font/fontawesome4-icons.json',
             
             # Online Linbaries
             'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',

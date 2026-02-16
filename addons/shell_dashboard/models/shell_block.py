@@ -89,7 +89,7 @@ class DashboardBlock(models.Model):
             ("bar", "Bar Chart"), 
             ("line", "Line Chart"), 
             ("pie", "Pie Chart"),
-            ("donut", "Donut Chart"),
+            ("doughnut", "Donut Chart"),
             ("radar", "Radar Chart"),
             ("polarArea", "Polar Area")
         ],
