@@ -46,7 +46,7 @@ export class DashboardTable extends Component {
         }
     }
     
-    async openRecord(row) {
+    openRecord = async (row) => { 
         if (!this.props.block.model_name || !row.id) return;
         
         try {
