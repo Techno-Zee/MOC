@@ -12,45 +12,49 @@ export class IconPickerField extends Component {
     setup() {
         this.root = useRef("root");
         this.state = useState({
+            // Nilai default: "fa-home" (akan ditampilkan sebagai "fa fa-home" di template)
             value: this.props.record.data[this.props.name] || 'fa-home',
             showPicker: false,
             searchTerm: '',
+            icons: [],        // akan diisi dari file JSON
+            loading: true,    // indikator loading
         });
 
-        // Bind methods secara manual
-        this.togglePicker = this.togglePicker.bind(this);
-        this.selectIcon = this.selectIcon.bind(this);
+        // Method untuk memuat ikon dari file JSON via fetch
+        this.loadIcons = async () => {
+            try {
+                const response = await fetch(
+                    "/shell_dashboard/static/src/font/fontawesome4-icons.json"
+                );
+                if (!response.ok) {
+                    throw new Error("Failed to load icon list");
+                }
+                const data = await response.json();
+                // Data diharapkan berupa array ["fa-500px", "fa-address-book", ...]
+                this.state.icons = Array.isArray(data) ? data : [];
+            } catch (error) {
+                console.error("Icon load error:", error);
+                this.state.icons = [];
+            } finally {
+                this.state.loading = false;
+            }
+        };
 
-        // atau gunakan arrow function
+        // Toggle picker (menggunakan arrow function)
         this.togglePicker = () => {
             this.state.showPicker = !this.state.showPicker;
         };
 
-        this.selectIcon = (icon) => {
-            this.state.value = `fa ${icon}`;
-            this.props.record.update({ [this.props.name]: this.state.value });
+        // Memilih ikon, iconClass adalah string seperti "fa-home"
+        this.selectIcon = (iconClass) => {
+            // Simpan nilai dalam format "fa fa-home" (dua kelas terpisah)
+            const fullClass = `fa ${iconClass}`;  // misal "fa-home" -> "fa fa-home"
+            this.state.value = fullClass;
+            this.props.record.update({ [this.props.name]: fullClass });
             this.state.showPicker = false;
         };
 
-        // Predefined set of Font Awesome icons
-        this.icons = [
-            "fa-home","fa-user","fa-users","fa-briefcase","fa-building",
-            "fa-calendar","fa-calendar-check","fa-clock","fa-hourglass",
-            "fa-chart-line","fa-chart-bar","fa-chart-pie","fa-chart-area",
-            "fa-bullhorn","fa-envelope","fa-bell","fa-star","fa-heart","fa-trophy",
-            "fa-thumbs-up","fa-thumbs-down","fa-check","fa-times","fa-ban",
-            "fa-sync","fa-upload","fa-download","fa-search","fa-filter","fa-tags",
-            "fa-percent","fa-file","fa-file-pdf","fa-folder","fa-copy",
-            "fa-edit","fa-save","fa-trash","fa-key","fa-lock","fa-unlock","fa-eye",
-            "fa-eye-slash","fa-shield","fa-comment","fa-comments","fa-phone",
-            "fa-mobile","fa-desktop","fa-database","fa-server","fa-plug",
-            "fa-power-off","fa-undo","fa-redo","fa-paste","fa-camera",
-            "fa-microphone","fa-headphones","fa-credit-card","fa-calculator",
-            "fa-shopping-cart","fa-money-bill","fa-handshake","fa-futbol","fa-coffee",
-            "fa-cloud","fa-moon","fa-sun","fa-rocket"            
-        ]
-
-
+        // Handler klik di luar area picker
         this.clickOutsideHandler = (event) => {
             if (this.root.el && !this.root.el.contains(event.target)) {
                 this.state.showPicker = false;
@@ -58,6 +62,7 @@ export class IconPickerField extends Component {
         };
 
         onMounted(() => {
+            this.loadIcons();
             document.addEventListener('click', this.clickOutsideHandler);
         });
 
@@ -66,22 +71,16 @@ export class IconPickerField extends Component {
         });
     }
 
-    togglePicker() {
-        this.state.showPicker = !this.state.showPicker;
-    }
-
-    selectIcon(icon) {
-        this.state.value = `fa ${icon}`;
-        this.props.record.update({ [this.props.name]: this.state.value });
-        this.state.showPicker = false;
-    }
-
+    // Getter untuk ikon yang sudah difilter berdasarkan searchTerm
     get filteredIcons() {
-        if (!this.state.searchTerm) {
-            return this.icons;
+        if (this.state.loading) {
+            return []; // saat loading, jangan tampilkan ikon
         }
-        return this.icons.filter(icon =>
-            icon.toLowerCase().includes(this.state.searchTerm.toLowerCase())
+        if (!this.state.searchTerm) {
+            return this.state.icons;
+        }
+        return this.state.icons.filter(iconClass =>
+            iconClass.toLowerCase().includes(this.state.searchTerm.toLowerCase())
         );
     }
 }

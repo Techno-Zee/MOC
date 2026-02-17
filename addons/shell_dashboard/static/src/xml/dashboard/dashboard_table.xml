@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
     <t t-name="shell_dashboard.Table" owl="1">
-        <div class="dashboard-table shadow-sm border rounded">
+        <div class="dashboard-table">
             <!-- Table Header -->
             <div class="table-header d-flex justify-content-between align-items-center p-2 border-bottom">
                 <h6 t-esc="props.block.name" class="table-title mb-0 fw-bold" />
@@ -27,7 +27,7 @@
                         </thead>
                         <tbody>
                             <t t-foreach="props.block.data.rows" t-as="row" t-key="row_index">
-                                <tr t-on-click="() => openRecord(row)">
+                                <tr t-on-click="(ev) => openRecord(row)">
                                     <t t-foreach="row" t-as="cell" t-key="cell_index">
                                         <td t-esc="cell" class="text-nowrap" />
                                     </t>

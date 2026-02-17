@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
-    <t t-name="shell_dashboard.KPI" owl="1">
-        <div class="grid-stack-item-content dashboard-kpi shadow-sm border rounded">
+    <t t-name="shell_dashboard.KPI" t-ref="root" owl="1">
+        <div class="dashboard-kpi">
             <!-- KPI Header -->
             <div class="kpi-header d-flex justify-content-between align-items-center p-2 border-bottom">
                 <h6 t-esc="props.block.name" class="kpi-title mb-0 fw-bold" />
@@ -15,50 +15,46 @@
                 </div>
             </div>
             <!-- KPI Body -->
-            <div t-att-style="'background-color: ' + props.block.config.colors.background" class="kpi-body p-3 d-flex flex-column align-items-center">
-                <!-- Main Value -->
-                <div t-att-style="'color: ' + props.block.config.colors.value" class="kpi-main-value display-4 fw-bold mb-2">
-                    <t t-esc="props.block.data.formatted_value" />
-                </div>
-                <!-- KPI Label -->
-                <div t-att-style="'color: ' + props.block.config.colors.text" class="kpi-label mb-3">
-                    <t t-esc="props.block.name" />
-                </div>
-                <!-- Trend and Target -->
-                <div class="kpi-metrics w-100">
-                    <!-- Trend -->
-                    <div t-if="props.block.data.trend_direction !== 'neutral'" class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="small">
-                            Trend (
-                            <t t-esc="props.block.config.trend_period" />
-                            )
-                        </span>
-                        <span t-att-class="'badge ' + getTrendClass(props.block.data.trend_direction)">
-                            <i t-att-class="getTrendIcon(props.block.data.trend_direction)" />
-                            <t t-esc="Math.abs(props.block.data.trend).toFixed(1) + '%'" />
-                        </span>
-                    </div>
-                    <!-- Target -->
-                    <div t-if="props.block.data.target_value > 0" class="d-flex justify-content-between align-items-center">
-                        <span class="small">Target Achievement</span>
-                        <div class="d-flex align-items-center">
-                            <div class="progress flex-grow-1 me-2" style="width: 100px; height: 8px;">
-                                <div t-att-style="'width: ' + Math.min(props.block.data.achievement, 100) + '%;'" class="progress-bar" role="progressbar" />
+            <div t-att-style="'background-color: ' + props.block.config.colors.background" class="kpi-body p-3">
+                <div class="kpi-card d-flex justify-content-between align-items-center">
+                    <!-- LEFT SIDE -->
+                    <div>
+                        <div class="d-flex">
+                            <div class="kpi-main-value kpi-value">
+                                <t t-esc="props.block.data.formatted_value" />
                             </div>
-                            <span class="small">
-                                <t t-esc="props.block.data.achievement.toFixed(1)" />
-                                %
+                            <span>
+                                <div t-att-style="'color: ' + props.block.config.colors.text" class="kpi-label small kpi-unit">
+                                    <t t-esc="props.block.name" />
+                                </div>
+                                <span t-att-class="'badge ' + getTrendClass(props.block.data.trend_direction)+' text-light'">
+                                    <i t-att-class="getTrendIcon(props.block.data.trend_direction)" />
+                                    <t t-esc="Math.abs(props.block.data.trend).toFixed(1) + '%'" />
+                                </span>
                             </span>
+                        </div>
+                        <!-- <div class="d-flex justify-content-between align-items-center">
+                            <t t-esc="props.block.config.trend_period" />
+                        </div> -->
+                    </div>
+                    <!-- RIGHT SIDE -->
+                    <div t-att-data-progress="props.block.data.achievement" t-ref="ring" class="progress-ring">
+                        <svg viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet">
+                            <circle class="progress-bg" cx="60" cy="60" r="50" />
+                            <circle class="progress-bar" cx="60" cy="60" r="50" />
+                        </svg>
+                        <div class="progress-content">
+                            <i t-att-class="props.block.config.icon + ' kpi-icon'" t-att-style="'color:' + props.block.config.colors.icon" />
+                            <div class="kpi-percent">
+                                <t t-esc="Math.min(props.block.data.achievement,100).toFixed(0)" />
+                                %
+                            </div>
                         </div>
                     </div>
                 </div>
+                <!-- Double-click overlay -->
+                <div t-on-dblclick.stop="openRecords" class="kpi-overlay" />
             </div>
-            <!-- KPI Icon -->
-            <div class="kpi-icon position-absolute" style="top: 10px; right: 10px;">
-                <i t-att-class="props.block.config.icon + ' fa-lg'" t-att-style="'color: ' + props.block.config.colors.icon" />
-            </div>
-            <!-- Double-click overlay -->
-            <div t-on-dblclick.stop="openRecords" class="kpi-overlay" />
         </div>
     </t>
 </templates>

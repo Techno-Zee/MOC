@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
     <t t-name="shell_dashboard.Chart" owl="1">
-        <div class="grid-stack-item-content dashboard-chart shadow-sm border rounded">
+        <div class="dashboard-chart">
             <!-- Chart Header -->
             <div class="chart-header d-flex justify-content-between align-items-center p-2 border-bottom">
                 <h6 t-esc="props.block.name" class="chart-title mb-0 fw-bold" />
                 <div class="chart-actions">
                     <div class="dropdown">
-                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" arial-expanded="false">
                             <i class="fa fa-ellipsis-h" />
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
@@ -18,19 +18,19 @@
                                 </a>
                             </li>
                             <li>
-                                <a t-on-click="exportChart('png')" class="dropdown-item" href="#">
+                                <a t-on-click="(ev) => exportChart('png')" class="dropdown-item" href="#">
                                     <i class="fa fa-image me-2" />
                                     Export as PNG
                                 </a>
                             </li>
                             <li>
-                                <a t-on-click.stop="exportChart('pdf')" class="dropdown-item" href="#">
+                                <a t-on-click="(ev) => exportChart('pdf')" class="dropdown-item" href="#">
                                     <i class="fa fa-file-pdf-o me-2" />
                                     Export as PDF
                                 </a>
                             </li>
                             <li>
-                                <a t-on-click.stop="exportChart('csv')" class="dropdown-item" href="#">
+                                <a t-on-click="(ev) => exportChart('csv')" class="dropdown-item" href="#">
                                     <i class="fa fa-file-excel-o me-2" />
                                     Export as CSV
                                 </a>
@@ -39,7 +39,7 @@
                                 <hr class="dropdown-divider" />
                             </li>
                             <li>
-                                <a t-on-click.stop="deleteBlock" class="dropdown-item text-danger" href="#">
+                                <a t-on-click="deleteBlock" class="dropdown-item text-danger" href="#">
                                     <i class="fa fa-trash me-2" />
                                     Delete
                                 </a>
@@ -50,11 +50,11 @@
             </div>
             <!-- Chart Body -->
             <div class="chart-body p-3">
-                <div class="chart-container position-relative" style="height: 250px;">
+                <div t-ref="chartContainer" class="chart-container position-relative" style="height: 250px;">
                     <canvas t-ref="chartCanvas" />
                 </div>
                 <!-- Chart Legend -->
-                <div t-if="props.block.data.labels  props.block.data.labels.length > 0" class="chart-legend mt-2">
+                <div t-if="props.block.data.labels?.length" class="chart-legend mt-2">
                     <div class="legend-items d-flex flex-wrap gap-2 justify-content-center">
                         <t t-foreach="props.block.data.labels" t-as="label" t-key="label_index">
                             <div class="legend-item d-flex align-items-center">
@@ -64,6 +64,8 @@
                         </t>
                     </div>
                 </div>
+                <!-- Double-click overlay -->
+                <div t-on-click="openRecords" class="chart-overlay" />
             </div>
             <!-- Chart Footer -->
             <div class="chart-footer px-3 pb-2 border-top">
@@ -75,8 +77,6 @@
                     <span>Double-click to view records</span>
                 </div>
             </div>
-            <!-- Double-click overlay -->
-            <div t-on-dblclick.stop="openRecords" class="chart-overlay" />
         </div>
     </t>
 </templates>

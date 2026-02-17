@@ -91,11 +91,17 @@ export class ShellDashboard extends Component {
                 [actionId]
             );
 
+            blocks.forEach(block => {
+                if (!block.grid_position) {
+                    block.grid_position = { x: 0, y: 0, w: 3, h: 2 };
+                }
+            });
             this.state.blocks = blocks;
+
             this.state.ready = true;
 
             // pastikan OWL sudah render DOM
-            requestAnimationFrame(() => this.initGrid());
+            setTimeout(() => this.initGrid(), 50);
 
         } catch (error) {
             console.error("Error initializing dashboard:", error);
@@ -109,47 +115,61 @@ export class ShellDashboard extends Component {
     }
 
     initGrid() {
-        if (!this.gridRef.el) {
-            console.error('Grid container not found');
-            return;
-        }
+        if (!this.gridRef.el) return;
 
-        console.log("Container width:", this.gridRef.el.clientWidth);
-        console.log("Container height:", this.gridRef.el.clientHeight);
+        this.destroyGrid();
 
+        const enabled = this.state.editMode;
 
         this.grid = GridStack.init({
-            staticGrid: true,
+            staticGrid: !enabled,
             cellHeight: 80,
             margin: 10,
-            float: true,
-            disableOneColumnMode: true,
+            float: enabled,
+            resizable: {
+                enabled: enabled,
+                handles: enabled ? 'e, se, s, sw, w' : ''
+            },
+            draggable: {
+                enabled: enabled,
+                handle: enabled ? '.grid-stack-item-content' : ''
+            }
         }, this.gridRef.el);
 
-        // PAKSA ENGINE HITUNG ULANG
-        requestAnimationFrame(() => {
-            // this.grid.engine.cleanupNodes();
+        // Paksa grid untuk memproses ulang layout
+        if (this.grid) {
+            this.grid.batchUpdate();
             this.grid.commit();
-            // this.grid.resize();   // <- ini penting
-        });
+        }
 
+        this.grid.on("change", (_, nodes) => this.onGridChange(nodes));
     }
 
-    onGridChange(items) {
-        for (const item of items) {
+    loadLayout() {
+        console.log("Loading layout...", this.state.blocks);
+        const layout = this.state.blocks.map(block => ({
+            id: String(block.id),
+            x: block.grid_position?.x || 0,
+            y: block.grid_position?.y || 0,
+            w: block.grid_position?.w || 3,
+            h: block.grid_position?.h || 2,
+        }));
+
+        this.grid.load(layout);
+    }
+
+    onGridChange(nodes) {
+        for (const node of nodes) {
             const block = this.state.blocks.find(
-                b => String(b.id) === String(item.id)
+                b => String(b.id) === String(node.id)
             );
-            console.log("Block ", block);
             if (!block) continue;
-
             block.grid_position = {
-                x: item.x,
-                y: item.y,
-                w: item.w,
-                h: item.h,
+                x: node.x,
+                y: node.y,
+                w: node.w,
+                h: node.h,
             };
-
         }
     }
 
@@ -165,6 +185,7 @@ export class ShellDashboard extends Component {
 
     destroyGrid() {
         if (this.grid) {
+            console.log("Destroying grid...");
             this.grid.destroy(false);
             this.grid = null;
         }
@@ -173,53 +194,28 @@ export class ShellDashboard extends Component {
     setEditMode(enabled) {
         if (!this.grid) return;
 
-        // Simpan layout saat ini
-        const currentLayout = this.grid.save(false);
 
-        // Hancurkan grid lama
-        this.destroyGrid();
+        if (!enabled) {
+            this.saveLayout();
+        }
 
-        // Tunggu sejenak
-        setTimeout(() => {
-            // Inisialisasi grid baru dengan mode yang diinginkan
-            this.grid = GridStack.init({
-                staticGrid: !enabled, // true = locked, false = editable
-                cellHeight: 80,
-                margin: 10,
-                float: enabled, // biarkan item float saat edit mode
-                resizable: {
-                    handles: enabled ? 'e, se, s, sw, w' : false
-                },
-                draggable: {
-                    handle: enabled ? '.grid-stack-item-content' : false
-                }
-            }, this.gridRef.el);
+        this.initGrid();
 
-            // Load layout yang disimpan
-            if (currentLayout && currentLayout.length > 0) {
-                this.grid.load(currentLayout);
-            }
-
-            // Re-attach event handler
-            this.grid.on("change", (_, items) => this.onGridChange(items));
-
-            console.log(`Grid reinitialized in ${enabled ? 'edit' : 'view'} mode`);
-
-            if (!enabled) {
-                this.saveLayout();
-            }
-        }, 50);
+        console.log(`Switched to ${enabled ? 'edit' : 'view'} mode`);
     }
+
+
 
     toggleEditMode() {
         this.state.editMode = !this.state.editMode;
+
         this.setEditMode(this.state.editMode);
     }
 
     async saveLayout() {
         if (!this.grid) return;
 
-        const layout = this.grid.save(false);
+        const layout = this.grid.save();
 
         const layoutData = layout
             .filter(item => item.id !== null && item.id !== undefined)
