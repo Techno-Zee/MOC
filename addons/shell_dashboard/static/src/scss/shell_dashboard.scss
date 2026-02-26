@@ -32,7 +32,6 @@
           background: white;
           border-radius: 8px;
           overflow: hidden;
-          height: 100%;
 
           &:hover {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -103,7 +102,6 @@
   }
 
   .chart-body {
-    position: relative;
     .chart-container {
       canvas {
         max-width: 100%;
@@ -124,6 +122,10 @@
         }
       }
     }
+  }
+
+  .chart-footer{
+    position: relative;
   }
 }
 
@@ -189,8 +191,13 @@
 // KPI Styles
 .dashboard-kpi {
   height: 100%;
+  .kpi-header {
+    background: #f8f9fa;
+  }
+
   .kpi-body {
     position: relative;
+    padding-bottom: 3px;
     .kpi-value {
       font-size: 3rem;
       font-weight: 700;

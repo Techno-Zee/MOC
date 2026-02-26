@@ -120,7 +120,7 @@
                             t-att-gs-w="block.grid_position.w"
                             t-att-gs-h="block.grid_position.h">
 
-                            <div class="grid-stack-item-content">
+                            <div t-attf-style="height: {{ block.type == 'list' ? 'fit-content' : '' }}" class="grid-stack-item-content ">
                                 <t t-component="resolveComponent(block.type)"
                                 t-props="{
                                     block: block,
