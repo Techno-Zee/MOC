@@ -1,154 +1,69 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
 
-
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    dashboard_default_tile_color = fields.Char(
-        string='Default Tile Color',
-        default='#1f6abb',
-        config_parameter='shell_dashboard.default_tile_color',
-        help='Default background color for new tiles'
-    )
-    
-    dashboard_default_text_color = fields.Char(
-        string='Default Text Color',
-        default='#FFFFFF',
-        config_parameter='shell_dashboard.default_text_color',
-        help='Default text color for new tiles'
-    )
-    
-    dashboard_default_cell_height = fields.Integer(
-        string='Grid Cell Height',
-        default=80,
-        config_parameter='shell_dashboard.grid_cell_height',
-        help='Height of each grid cell in pixels'
-    )
-    
-    dashboard_default_columns = fields.Integer(
-        string='Grid Columns',
-        default=12,
-        config_parameter='shell_dashboard.grid_columns',
-        help='Number of columns in the grid layout'
-    )
-    
-    dashboard_enable_animations = fields.Boolean(
-        string='Enable Animations',
-        default=True,
-        config_parameter='shell_dashboard.enable_animations',
-        help='Enable animations for dashboard elements'
-    )
-    
-    dashboard_max_blocks_per_user = fields.Integer(
-        string='Maximum Blocks per User',
-        default=50,
-        config_parameter='shell_dashboard.max_blocks_per_user',
-        help='Maximum number of dashboard blocks a user can create'
-    )
-    
-    dashboard_default_chart_type = fields.Selection(
+    # ==== DASHBOARD SETTINGS ====
+
+    # General
+    view_icon = fields.Boolean(string="View Icon", default=True)
+    icon_position = fields.Selection(
+        string="Icon Position",
         selection=[
-            ("bar", "Bar Chart"),
-            ("line", "Line Chart"),
-            ("pie", "Pie Chart"),
-            ("doughnut", "Donut Chart"),
-            ("radar", "Radar Chart"),
+            ("left", "Left"),
+            ("right", "Right"),
         ],
-        string='Default Chart Type',
-        default='bar',
-        config_parameter='shell_dashboard.default_chart_type',
-        help='Default chart type for new chart blocks'
+        default="right",
+        help="Position of the icon relative to the KPI text."
     )
-    
-    dashboard_auto_refresh_interval = fields.Integer(
-        string='Auto Refresh Interval (seconds)',
-        default=60,
-        config_parameter='shell_dashboard.auto_refresh_interval',
-        help='Interval in seconds for automatic dashboard refresh (0 to disable)'
-    )
-    
-    dashboard_enable_data_export = fields.Boolean(
-        string='Enable Data Export',
-        default=True,
-        config_parameter='shell_dashboard.enable_data_export',
-        help='Allow users to export dashboard data to CSV/Excel'
-    )
-    
-    dashboard_show_quick_stats = fields.Boolean(
-        string='Show Quick Statistics',
-        default=True,
-        config_parameter='shell_dashboard.show_quick_stats',
-        help='Show quick statistics panel on dashboard'
-    )
-    
-    dashboard_date_range_default = fields.Selection(
+
+    # Mobile views
+    mobile_layout_kpi_tile = fields.Selection(
+        string="Mobile KPI Tile Layout",
         selection=[
-            ('today', 'Today'),
-            ('yesterday', 'Yesterday'),
-            ('this_week', 'This Week'),
-            ('last_week', 'Last Week'),
-            ('this_month', 'This Month'),
-            ('last_month', 'Last Month'),
-            ('this_quarter', 'This Quarter'),
-            ('this_year', 'This Year'),
+            ("grid", "Grid Layout (even columns)"),
+            ("scroll_horizontal", "Horizontal Scroll"),
+            ("max_items", "Max Items (limited)"),
         ],
-        string='Default Date Range',
-        default='this_month',
-        config_parameter='shell_dashboard.date_range_default',
-        help='Default date range filter for dashboard data'
+        default="max_items",
+        help="Defines how KPI tiles are arranged on mobile devices."
     )
-    
-    dashboard_cache_duration = fields.Integer(
-        string='Cache Duration (minutes)',
-        default=5,
-        config_parameter='shell_dashboard.cache_duration',
-        help='Duration in minutes to cache dashboard data for performance'
+
+    mobile_max_items = fields.Integer(
+        string="Maximum Items on Mobile",
+        default=4,
+        help="Maximum number of KPI tiles displayed when 'Max Items' layout is selected."
     )
-    
-    dashboard_enable_sql_debug = fields.Boolean(
-        string='Enable SQL Debug Mode',
-        default=False,
-        config_parameter='shell_dashboard.enable_sql_debug',
-        help='Log SQL queries for debugging (for developers only)'
+
+    mobile_block_type_grouping = fields.Boolean(
+        string="Block Type Grouping",
+        default=True,
+        help="Group KPI tiles by type (e.g., revenue, orders) on mobile."
     )
-    
+
     @api.model
     def get_values(self):
         res = super(ResConfigSettings, self).get_values()
         params = self.env['ir.config_parameter'].sudo()
-        
+
+        # Ambil nilai dari parameter sistem, gunakan default sesuai field
         res.update(
-            dashboard_default_tile_color=params.get_param('shell_dashboard.default_tile_color', default='#1f6abb'),
-            dashboard_default_text_color=params.get_param('shell_dashboard.default_text_color', default='#FFFFFF'),
-            dashboard_default_cell_height=int(params.get_param('shell_dashboard.grid_cell_height', default=80)),
-            dashboard_default_columns=int(params.get_param('shell_dashboard.grid_columns', default=12)),
-            dashboard_enable_animations=params.get_param('shell_dashboard.enable_animations', default=True) == 'True',
-            dashboard_max_blocks_per_user=int(params.get_param('shell_dashboard.max_blocks_per_user', default=50)),
-            dashboard_default_chart_type=params.get_param('shell_dashboard.default_chart_type', default='bar'),
-            dashboard_auto_refresh_interval=int(params.get_param('shell_dashboard.auto_refresh_interval', default=60)),
-            dashboard_enable_data_export=params.get_param('shell_dashboard.enable_data_export', default=True) == 'True',
-            dashboard_show_quick_stats=params.get_param('shell_dashboard.show_quick_stats', default=True) == 'True',
-            dashboard_date_range_default=params.get_param('shell_dashboard.date_range_default', default='this_month'),
-            dashboard_cache_duration=int(params.get_param('shell_dashboard.cache_duration', default=5)),
-            dashboard_enable_sql_debug=params.get_param('shell_dashboard.enable_sql_debug', default=False) == 'True',
+            view_icon=params.get_param('dashboard.view_icon', default=True),
+            icon_position=params.get_param('dashboard.icon_position', default='right'),
+            mobile_layout_kpi_tile=params.get_param('dashboard.mobile_layout_kpi_tile', default='max_items'),
+            mobile_max_items=int(params.get_param('dashboard.mobile_max_items', default=4)),
+            mobile_block_type_grouping=params.get_param('dashboard.mobile_block_type_grouping', default=True),
         )
         return res
-    
+
     def set_values(self):
         super(ResConfigSettings, self).set_values()
         params = self.env['ir.config_parameter'].sudo()
-        
-        params.set_param('shell_dashboard.default_tile_color', self.dashboard_default_tile_color)
-        params.set_param('shell_dashboard.default_text_color', self.dashboard_default_text_color)
-        params.set_param('shell_dashboard.grid_cell_height', str(self.dashboard_default_cell_height))
-        params.set_param('shell_dashboard.grid_columns', str(self.dashboard_default_columns))
-        params.set_param('shell_dashboard.enable_animations', str(self.dashboard_enable_animations))
-        params.set_param('shell_dashboard.max_blocks_per_user', str(self.dashboard_max_blocks_per_user))
-        params.set_param('shell_dashboard.default_chart_type', self.dashboard_default_chart_type)
-        params.set_param('shell_dashboard.auto_refresh_interval', str(self.dashboard_auto_refresh_interval))
-        params.set_param('shell_dashboard.enable_data_export', str(self.dashboard_enable_data_export))
-        params.set_param('shell_dashboard.show_quick_stats', str(self.dashboard_show_quick_stats))
-        params.set_param('shell_dashboard.date_range_default', self.dashboard_date_range_default)
-        params.set_param('shell_dashboard.cache_duration', str(self.dashboard_cache_duration))
-        params.set_param('shell_dashboard.enable_sql_debug', str(self.dashboard_enable_sql_debug))
+
+        # Simpan nilai ke parameter sistem
+        params.set_param('dashboard.view_icon', str(self.view_icon))
+        params.set_param('dashboard.icon_position', self.icon_position)
+        params.set_param('dashboard.mobile_layout_kpi_tile', self.mobile_layout_kpi_tile)
+        params.set_param('dashboard.mobile_max_items', str(self.mobile_max_items))
+        params.set_param('dashboard.mobile_block_type_grouping', str(self.mobile_block_type_grouping))

@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <!-- Root: Settings / Technical -->
+    <!-- Action untuk membuka Settings Shell Dashboard -->
+    <record id="action_shell_dashboard_settings" model="ir.actions.act_window">
+        <field name="name">Shell Dashboard Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'shell_dashboard'}</field>
+    </record>
+
+    <!-- Root Menu: Shell Dashboard -->
     <menuitem
         id="menu_shell_dashboard_root"
         name="Shell Dashboard"
@@ -9,7 +18,7 @@
         web_icon="shell_dashboard,static/description/icon.png"
     />
 
-    <!-- Dashboards -->
+    <!-- Submenu: Dashboards -->
     <menuitem
         id="menu_shell_dashboard_dashboards"
         name="Dashboards"
@@ -18,7 +27,7 @@
         sequence="10"
     />
 
-    <!-- Dashboard Blocks -->
+    <!-- Submenu: Dashboard Blocks -->
     <menuitem
         id="menu_shell_dashboard_blocks"
         name="Dashboard Blocks"
@@ -27,7 +36,7 @@
         sequence="20"
     />
 
-    <!-- Configuration -->
+    <!-- Submenu: Configuration -->
     <menuitem
         id="menu_shell_dashboard_config"
         name="Configuration"
@@ -35,13 +44,23 @@
         sequence="90"
     />
 
-    <!-- Dashboard Menus -->
+    <!-- Submenu Configuration: Dashboard Menus (asumsi sudah ada action-nya) -->
     <menuitem
         id="menu_shell_dashboard_menus"
         name="Dashboard Menus"
         parent="menu_shell_dashboard_config"
         action="action_dashboard_menu"
         sequence="10"
+    />
+
+    <!-- Submenu Configuration: Settings (baru) -->
+    <menuitem
+        id="menu_shell_dashboard_settings"
+        name="Settings"
+        parent="menu_shell_dashboard_config"
+        action="action_shell_dashboard_settings"
+        sequence="20"
+        groups="base.group_system"
     />
 
 </odoo>
