@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-  <data noupdate="1">
+  <data>
+    <record id="module_category_dashboard" model="ir.module.category">
+      <field name="name">Dashboard</field>
+      <field name="description">Dashboard Access Level</field>
+      <field name="sequence">30</field>
+    </record>
 
     <!-- Dashboard User: bisa lihat -->
     <record id="group_dashboard_user" model="res.groups">
       <field name="name">Dashboard User</field>
-      <field name="category_id" ref="base.module_category_hidden"/>
+      <field name="category_id" ref="module_category_dashboard" />
     </record>
 
     <!-- Dashboard Manager: bisa lihat + edit -->
     <record id="group_dashboard_manager" model="res.groups">
       <field name="name">Dashboard Manager</field>
-      <field name="category_id" ref="base.module_category_hidden"/>
+      <field name="category_id" ref="module_category_dashboard" />
     </record>
 
     <!-- Dashboard Admin: full akses -->
     <record id="group_dashboard_admin" model="res.groups">
       <field name="name">Dashboard Administrator</field>
-      <field name="category_id" ref="base.module_category_hidden"/>
+      <field name="category_id" ref="module_category_dashboard" />
     </record>
 
   </data>
