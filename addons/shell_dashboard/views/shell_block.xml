@@ -44,7 +44,7 @@
                             <group string="Preview" invisible="type == 'graph'">
                                 <field name="record_value" widget="monetary" options="{'currency_field': 'currency_id'}" readonly="1" class="oe_inline" />
                                 <label string="Current Value" for="record_value" />
-                                <div class="o_stat_info">
+                                <div class="o_stat_info" invisible="type != 'kpi'">
                                     <span class="o_stat_text">Target:</span>
                                     <field name="target_value" class="o_stat_value" />
                                 </div>

@@ -139,7 +139,6 @@ export class ShellDashboard extends Component {
         // Paksa grid untuk memproses ulang layout
         if (this.grid) {
             this.grid.batchUpdate();
-            this.grid.commit();
         }
 
         this.grid.on("change", (_, nodes) => this.onGridChange(nodes));
@@ -404,7 +403,7 @@ export class ShellDashboard extends Component {
 
     async exportAsPDF() {
         try {
-            const element = this.gridContainer.el;
+            const element = this.gridRef.el;
             const opt = {
                 margin: 10,
                 filename: 'dashboard.pdf',
@@ -423,7 +422,7 @@ export class ShellDashboard extends Component {
 
     async exportAsPNG() {
         try {
-            const element = this.gridContainer.el;
+            const element = this.gridRef.el;
             const canvas = await html2canvas(element, { scale: 2 });
             const link = document.createElement('a');
             link.download = 'dashboard.png';

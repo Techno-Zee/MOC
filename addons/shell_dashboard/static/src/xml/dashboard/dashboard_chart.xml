@@ -65,10 +65,10 @@
                     </div>
                 </div>
                 <!-- Double-click overlay -->
-                <div t-on-click="openRecords" class="chart-overlay" />
             </div>
             <!-- Chart Footer -->
             <div class="chart-footer px-3 pb-2 border-top">
+                <div t-on-click="openRecords" class="chart-overlay" />
                 <div class="d-flex justify-content-between small text-muted">
                     <span>
                         Last updated:
